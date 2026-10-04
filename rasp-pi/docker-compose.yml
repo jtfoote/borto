@@ -1,0 +1,24 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+  
+  backend:
+    build: ./backend
+    volumes:
+      - sqlite_data:/app/data
+
+  serial:
+    build: ./serial
+    volumes:
+      - sqlite_data:/app/data
+   #devices:
+   #  - "/dev/serial0:/dev/serial0" # STM32 UART
+   #  - "/dev/i2c-1:/dev/i2c-1"     # I2C Display
+    restart: always
+
+volumes:
+  sqlite_data:

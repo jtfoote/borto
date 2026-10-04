@@ -1,0 +1,5 @@
+pyserial
+sqlalchemy
+RPLCD
+smbus2
+luma.oled
