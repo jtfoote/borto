@@ -4,6 +4,7 @@ from shared.models import engine, SystemMetric
 
 app = FastAPI()
 
+
 @app.get("/api/metrics/latest")
 def get_latest_metric():
     with Session(engine) as db:

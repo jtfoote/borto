@@ -35,7 +35,7 @@
                 --pico-primary-hover: #0f283b;
                 --pico-primary-hover-background: #0f283b;
                 --pico-primary-focus: rgba(22, 58, 85, 0.25);
-                --pico-primary-inverse: #ffffff;
+                --pico-primary-inverse: #F5F5F5;
                 
                 /* Vibrant Orange Secondary (Active tabs, alerts, chart highlights) */
                 --pico-secondary: #e36916;
@@ -43,8 +43,23 @@
                 --pico-secondary-hover: #c25912;
                 --pico-secondary-hover-background: #c25912;
                 --pico-secondary-focus: rgba(227, 105, 22, 0.25);
-                --pico-secondary-inverse: #ffffff;
+                --pico-secondary-inverse: #F5F5F5;
             }
+
+        .logos:hover {
+            opacity: 0.75;
+            transition: opacity 0.2s ease;
+            cursor: pointer;
+        }
+
+        .main-banner {
+            display:grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            justify-items: end;
+        }
+        .gf-bbf {
+            display: flex;
+        }
     </style>
     <!-- Load chart.js -->
      <script defer src="chart.min.js"></script>
@@ -53,12 +68,27 @@
 </head>
 <body>
     <main class="container">
-        <h1>B.O.R.T.O. System Monitor</h1>
-        <nav>
-            <li><a href="https://github.com/jtfoote/borto">Github</a></li>
-        </nav>
+        <!-- Header -->
+        <article style="background-color: var(--pico-primary-focus);" class="main-banner" role="grid">
+            <a @click="activeTab = 'dashboard" style="justify-self: start;">
+                <img
+                    class="logos" 
+                    src="images/borto-logo.svg" 
+                    style="height:7em;" 
+                />
+            </a>
+            <div class="gh-bbf">
+                <a href="https://github.com/jtfoote/borto" target="_blank" style="padding: 1em;">
+                    <img class="logos" src="images/GitHub_Invertocat_Black.svg" alt="Github Logo" style="height:2em;"/>
+                </a>
+                <a href="https://sites.google.com/view/theborto" target="_blank">
+                    <img class="logos" src="images/logo.svg" alt="BBF Logo" style="height:2em;" />
+                </a>
+            </div>
+            
+        </article>
         <div x-data="{ activeTab: 'dashboard' }">
-            <nav>
+            <nav role="grid" style="display: flex; flex-wrap: wrap;">
                 <button class="secondary" :class="activeTab === 'dashboard' ? '' : 'outline'" @click="activeTab = 'dashboard'">Dashboard</button>
                 <button class="secondary" :class="activeTab === 'metrics' ? '' : 'outline'" @click="activeTab = 'metrics'">Metrics</button>
                 <button class="secondary" :class="activeTab === 'settings' ? '' : 'outline'" @click="activeTab = 'settings'">Settings</button>
@@ -66,8 +96,29 @@
             </nav>
 
             <!-- Pages -->
-            <section x-show="activeTab === 'dashboard'"> <!-- Dashboard UI --> </section>
-            <section x-show="activeTab === 'metrics'"> <!-- Charts UI --> </section>
+            <section 
+                x-show="activeTab === 'dashboard'"
+                x-transition.delay.100ms 
+                x-transition:enter.duration.250ms
+                x-transition:leave.duration.50ms
+                >
+                <!-- Dashboard UI -->
+                <article>
+                    This is the dashboard!
+                </article>
+            </section>
+
+            <section 
+                x-show="activeTab === 'metrics'" 
+                x-transition.delay.100ms 
+                x-transition:enter.duration.250ms
+                x-transition:leave.duration.50ms
+                >
+                 <!-- Charts UI --> 
+                <article>
+                    This is the metrics!
+                </article>
+            </section>
             <section x-show="activeTab === 'settings'"> <!-- Settings UI --> </section>
             <section x-show="activeTab === 'troubleshooting'"> <!-- Troubleshooting UI --> </section>
         </div>
