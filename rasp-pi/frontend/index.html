@@ -3,9 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>B.O.R.T.O. Dashboard</title>
+    <!-- Favicon link -->
+     <link rel="icon" href="images/borto-icon.svg">
+    <!-- Link your local Pico CSS file -->
+    <link rel="stylesheet" href="css/pico.min.css">
+    <style>
+        [data-theme="light"],
+        :root:not([data-theme="dark"]) {
+                /* Navy Blue Primary (Nav bars, primary buttons, text) */
+                --pico-primary: #163a55; 
+                --pico-primary-background: #163a55;
+                --pico-primary-hover: #0f283b;
+                --pico-primary-hover-background: #0f283b;
+                --pico-primary-focus: rgba(22, 58, 85, 0.25);
+                --pico-primary-inverse: #ffffff;
+                
+                /* Vibrant Orange Secondary (Active tabs, alerts, chart highlights) */
+                --pico-secondary: #e36916;
+                --pico-secondary-background: #e36916;
+                --pico-secondary-hover: #c25912;
+                --pico-secondary-hover-background: #c25912;
+                --pico-secondary-focus: rgba(227, 105, 22, 0.25);
+                --pico-secondary-inverse: #ffffff;
+            }
+
+        [data-theme="dark"] {
+                /* Navy Blue Primary (Nav bars, primary buttons, text) */
+                --pico-primary: #163a55; 
+                --pico-primary-background: #163a55;
+                --pico-primary-hover: #0f283b;
+                --pico-primary-hover-background: #0f283b;
+                --pico-primary-focus: rgba(22, 58, 85, 0.25);
+                --pico-primary-inverse: #ffffff;
+                
+                /* Vibrant Orange Secondary (Active tabs, alerts, chart highlights) */
+                --pico-secondary: #e36916;
+                --pico-secondary-background: #e36916;
+                --pico-secondary-hover: #c25912;
+                --pico-secondary-hover-background: #c25912;
+                --pico-secondary-focus: rgba(227, 105, 22, 0.25);
+                --pico-secondary-inverse: #ffffff;
+            }
+    </style>
+    <!-- Load chart.js -->
+     <script defer src="chart.min.js"></script>
+    <!-- Load Alpine.js -->
+    <script defer src="alpine.min.js"></script>
 </head>
 <body>
-    This is a test
+    <main class="container">
+        <h1>B.O.R.T.O. System Monitor</h1>
+        <nav>
+            <li><a href="https://github.com/jtfoote/borto">Github</a></li>
+        </nav>
+        <div x-data="{ activeTab: 'dashboard' }">
+            <nav>
+                <button class="secondary" :class="activeTab === 'dashboard' ? '' : 'outline'" @click="activeTab = 'dashboard'">Dashboard</button>
+                <button class="secondary" :class="activeTab === 'metrics' ? '' : 'outline'" @click="activeTab = 'metrics'">Metrics</button>
+                <button class="secondary" :class="activeTab === 'settings' ? '' : 'outline'" @click="activeTab = 'settings'">Settings</button>
+                <button class="secondary" :class="activeTab === 'troubleshooting' ? '' : 'outline'" @click="activeTab = 'troubleshooting'">Troubleshooting</button>
+            </nav>
+
+            <!-- Pages -->
+            <section x-show="activeTab === 'dashboard'"> <!-- Dashboard UI --> </section>
+            <section x-show="activeTab === 'metrics'"> <!-- Charts UI --> </section>
+            <section x-show="activeTab === 'settings'"> <!-- Settings UI --> </section>
+            <section x-show="activeTab === 'troubleshooting'"> <!-- Troubleshooting UI --> </section>
+        </div>
+        <!-- Alpine.js component: initializes data and sets up a 1-second polling loop -->
+        <div x-data="bortoMonitor()" x-init="startPolling()">
+            <article>
+                <header>
+                    <strong>System Status: </strong>
+                    <span x-text="telemetry.status || 'Waiting for data...'"></span>
+                </header>
+                
+                <div class="grid">
+                    <div>
+                        <p><strong>Location:</strong> <span x-text="telemetry.value_location"></span></p>
+                    </div>
+                    <div>
+                        <p><strong>Type:</strong> <span x-text="telemetry.value_type"></span></p>
+                    </div>
+                    <div>
+                        <p><strong>Value:</strong> <span x-text="telemetry.value"></span></p>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('bortoMonitor', () => ({
+                telemetry: {},
+                startPolling() {
+                    this.fetchMetrics();
+                    // Poll the FastAPI backend every 500 milliseconds
+                    setInterval(() => this.fetchMetrics(), 500); 
+                },
+                async fetchMetrics() {
+                    try {
+                        const response = await fetch('/api/metrics/latest');
+                        if (response.ok) {
+                            this.telemetry = await response.json();
+                        }
+                    } catch (error) {
+                        console.error('Connection to backend lost:', error);
+                    }
+                }
+            }))
+        })
+    </script>
 </body>
 </html>
