@@ -47,7 +47,7 @@
             }
 
         .logos:hover {
-            opacity: 0.75;
+            opacity: 0.65;
             transition: opacity 0.2s ease;
             cursor: pointer;
         }
@@ -57,39 +57,35 @@
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             justify-items: end;
         }
-        .gf-bbf {
-            display: flex;
-        }
     </style>
     <!-- Load chart.js -->
-     <script defer src="chart.min.js"></script>
+     <script src="chart.umd.js"></script>
     <!-- Load Alpine.js -->
     <script defer src="alpine.min.js"></script>
 </head>
-<body>
+<body x-data="bortoMonitor()" x-init="startPolling()">
     <main class="container">
         <!-- Header -->
         <article style="background-color: var(--pico-primary-focus);" class="main-banner" role="grid">
-            <a @click="activeTab = 'dashboard" style="justify-self: start;">
+            <a href="#" @click.prevent="activeTab = 'dashboard'" style="justify-self: start; text-decoration: none;">
                 <img
                     class="logos" 
                     src="images/borto-logo.svg" 
                     style="height:7em;" 
                 />
             </a>
-            <div class="gh-bbf">
-                <a href="https://github.com/jtfoote/borto" target="_blank" style="padding: 1em;">
+            <div x-data="{ activeTab: 'dashboard'}">
+                <a href="https://github.com/jtfoote/borto" target="_blank" style="padding: 1em; text-decoration: none;">
                     <img class="logos" src="images/GitHub_Invertocat_Black.svg" alt="Github Logo" style="height:2em;"/>
                 </a>
-                <a href="https://sites.google.com/view/theborto" target="_blank">
+                <a href="https://sites.google.com/view/theborto" target="_blank" style="text-decoration: none;">
                     <img class="logos" src="images/logo.svg" alt="BBF Logo" style="height:2em;" />
                 </a>
             </div>
-            
         </article>
-        <div x-data="{ activeTab: 'dashboard' }">
+        <div>
             <nav role="grid" style="display: flex; flex-wrap: wrap;">
-                <button class="secondary" :class="activeTab === 'dashboard' ? '' : 'outline'" @click="activeTab = 'dashboard'">Dashboard</button>
+                <button class="secondary" :class="activeTab === 'dashboard' ? '' : 'outline'" @click="activeTab = 'dashboard'" x-show="activeTab !== 'dashboard'" x-transition>&larr; Home</button>
                 <button class="secondary" :class="activeTab === 'metrics' ? '' : 'outline'" @click="activeTab = 'metrics'">Metrics</button>
                 <button class="secondary" :class="activeTab === 'settings' ? '' : 'outline'" @click="activeTab = 'settings'">Settings</button>
                 <button class="secondary" :class="activeTab === 'troubleshooting' ? '' : 'outline'" @click="activeTab = 'troubleshooting'">Troubleshooting</button>
@@ -103,9 +99,11 @@
                 x-transition:leave.duration.50ms
                 >
                 <!-- Dashboard UI -->
-                <article>
-                    This is the dashboard!
-                </article>
+                <div>
+                    <article>
+                        This is the dashboard!
+                    </article>
+                </div>
             </section>
 
             <section 
@@ -116,14 +114,38 @@
                 >
                  <!-- Charts UI --> 
                 <article>
-                    This is the metrics!
+                    <div role="grid">
+                        <canvas id="dc1voltage" x-init="
+                            window.dc1_voltage_chart = new Chart($el, {
+                                type: 'line',
+                                data: {
+                                    labels: [],
+                                    datasets: [{
+                                        label: 'DC1 Voltage',
+                                        data: [],
+                                        borderColor: '#e36916',
+                                        backgroundColor: 'rgba(227, 105, 22, 0.2)',
+                                        borderWidth: 2
+                                    },
+                                    {
+                                        label: 'DC1 Current',
+                                        data: [],
+                                        borderColor: '#163a55',
+                                        backgroundColor: 'rgba(22, 58, 85, 0.25)',
+                                        borderWidth: 2
+                                    }]
+                                }
+                            });
+                        "></canvas>
+                    </div>
+                    
                 </article>
             </section>
             <section x-show="activeTab === 'settings'"> <!-- Settings UI --> </section>
             <section x-show="activeTab === 'troubleshooting'"> <!-- Troubleshooting UI --> </section>
         </div>
         <!-- Alpine.js component: initializes data and sets up a 1-second polling loop -->
-        <div x-data="bortoMonitor()" x-init="startPolling()">
+        <div>
             <article>
                 <header>
                     <strong>System Status: </strong>
@@ -143,15 +165,51 @@
                 </div>
             </article>
         </div>
+        <label for="theme-toggle">
+            <input type="checkbox" name="theme-toggle" id="theme-toggle" role="switch">
+            Dark Mode
+        </label>
     </main>
 
     <script>
+
+        function add_data_to_chart(chart, new_label, new_value, data_type) {
+            if (data_type === 'voltage') {
+                if ((chart.data.labels.length === chart.data.datasets[0].data.length || chart.data.labels.length === chart.data.datasets[1].data.length) && charts.data.labels.length !== 0) {
+                    {};
+                } else {
+                    chart.data.labels.push(new_label);
+                }
+                chart.data.datasets[0].data.push(new_value);
+
+                if (chart.data.labels.length > 50) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[0].data.shift();
+                }
+            } else if (data_type === 'current') {
+                if ((chart.data.labels.length === chart.data.datasets[0].data.length || chart.data.labels.length === chart.data.datasets[1].data.length) && chart.data.labels.length !== 0) {
+                    {};
+                } else {
+                    chart.data.labels.push(new_label);
+                }
+                chart.data.datasets[1].data.push(new_value);
+
+                if (chart.data.labels.length > 50) {
+                    chart.data.labels.shift();
+                    chart.data.datasets[1].data.shift();
+                }
+            }
+            
+
+            chart.update();
+        }
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('bortoMonitor', () => ({
+                activeTab: 'dashboard',
                 telemetry: {},
                 startPolling() {
                     this.fetchMetrics();
-                    // Poll the FastAPI backend every 500 milliseconds
                     setInterval(() => this.fetchMetrics(), 500); 
                 },
                 async fetchMetrics() {
@@ -159,13 +217,50 @@
                         const response = await fetch('/api/metrics/latest');
                         if (response.ok) {
                             this.telemetry = await response.json();
+                            if (this.telemetry.value_location === 2) { // dc1
+                                if (this.telemetry.value_type === 1) { // dc1 voltage
+                                    if (dc1_voltage_chart) {
+                                        add_data_to_chart(dc1_voltage_chart, this.telemetry.timestamp, this.telemetry.value, 'voltage');
+                                    }
+                                } else if (this.telemetry.value_type === 2) { // dc1 current
+                                    if (dc1_voltage_chart) {
+                                        add_data_to_chart(dc1_voltage_chart, this.telemetry.timestamp, this.telemetry.value, 'current');
+                                    }
+                                }
+                            }
                         }
                     } catch (error) {
                         console.error('Connection to backend lost:', error);
                     }
                 }
             }))
-        })
+        });
+
+        const toggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+
+        // Determine user's theme
+        const saved_theme = localStorage.getItem('theme');
+        const prefers_dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (saved_theme === 'dark' || (!saved_theme && prefers_dark)) {
+            html.setAttribute('data-theme', 'dark');
+            toggle.checked = true;
+        } else {
+            html.setAttribute('data-theme', 'light');
+            toggle.checked = false;
+        }
+
+        // Listen for toggle switch
+        toggle.addEventListener('change', () => {
+            if (toggle.checked) {
+                html.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                html.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }
+        });
     </script>
 </body>
 </html>
