@@ -174,32 +174,6 @@
     <script>
 
         function add_data_to_chart(chart, new_label, new_value, data_type) {
-            if (data_type === 'voltage') {
-                if ((chart.data.labels.length === chart.data.datasets[0].data.length || chart.data.labels.length === chart.data.datasets[1].data.length) && charts.data.labels.length !== 0) {
-                    {};
-                } else {
-                    chart.data.labels.push(new_label);
-                }
-                chart.data.datasets[0].data.push(new_value);
-
-                if (chart.data.labels.length > 50) {
-                    chart.data.labels.shift();
-                    chart.data.datasets[0].data.shift();
-                }
-            } else if (data_type === 'current') {
-                if ((chart.data.labels.length === chart.data.datasets[0].data.length || chart.data.labels.length === chart.data.datasets[1].data.length) && chart.data.labels.length !== 0) {
-                    {};
-                } else {
-                    chart.data.labels.push(new_label);
-                }
-                chart.data.datasets[1].data.push(new_value);
-
-                if (chart.data.labels.length > 50) {
-                    chart.data.labels.shift();
-                    chart.data.datasets[1].data.shift();
-                }
-            }
-            
 
             chart.update();
         }
@@ -208,29 +182,36 @@
             Alpine.data('bortoMonitor', () => ({
                 activeTab: 'dashboard',
                 telemetry: {},
+                dc1metrics: {},
                 startPolling() {
                     this.fetchMetrics();
-                    setInterval(() => this.fetchMetrics(), 500); 
+                    setInterval(() => this.fetchMetrics(), 500);
+                    this.getDC1Metrics();
+                    setInterval(() => {
+                        this.getDC1Metrics();
+                    }, 500); 
                 },
                 async fetchMetrics() {
                     try {
                         const response = await fetch('/api/metrics/latest');
                         if (response.ok) {
                             this.telemetry = await response.json();
-                            if (this.telemetry.value_location === 2) { // dc1
-                                if (this.telemetry.value_type === 1) { // dc1 voltage
-                                    if (dc1_voltage_chart) {
-                                        add_data_to_chart(dc1_voltage_chart, this.telemetry.timestamp, this.telemetry.value, 'voltage');
-                                    }
-                                } else if (this.telemetry.value_type === 2) { // dc1 current
-                                    if (dc1_voltage_chart) {
-                                        add_data_to_chart(dc1_voltage_chart, this.telemetry.timestamp, this.telemetry.value, 'current');
-                                    }
-                                }
-                            }
                         }
                     } catch (error) {
                         console.error('Connection to backend lost:', error);
+                    }
+                },
+                async getDC1Metrics () {
+                    try {
+                        const dc1response = await fetch('/api/metrics/dc1');
+                        if (dc1response.ok) {
+                            this.dc1metrics = await dc1response.json();
+                        }
+                        for (let i = 0; i < this.dc1metrics.values.length; i++) {
+                            console.log(this.dc1metrics.values[i]);
+                        }
+                    } catch (error) {
+                        console.error('DC1 Metrics could not be read:', error);
                     }
                 }
             }))

@@ -52,23 +52,21 @@ def read_and_store_metrics() -> None:
             try:
                 if SIMULATION_MODE:
                     # Generate fake data for testing
-                    value_type: VAL_TYPE = VAL_TYPE(random.randint(1,4))
                     location: LOCATION = LOCATION(random.randint(1,5))
                     status: BORTO_STATUS = BORTO_STATUS.OK
-                    match value_type:
-                        case VAL_TYPE.VOLTAGE:
-                            value = generate_voltage_val(location, tick)
-                        case VAL_TYPE.CURRENT:
-                            value = generate_current_val(location, tick)
-                        case VAL_TYPE.POWER:
-                            value = generate_current_val(location,tick) * generate_voltage_val(location, tick)
-                        case VAL_TYPE.TEMPERATURE:
-                            value = random.uniform(20,26)
-                            location = LOCATION.ENCLOSURE
+                    if location != LOCATION.ENCLOSURE:
+                        voltage = generate_voltage_val(location, tick)
+                        current = generate_current_val(location, tick)
+                        power = voltage * current
+                        values = [voltage, current, power]
+                        value_types = [VAL_TYPE.VOLTAGE, VAL_TYPE.CURRENT, VAL_TYPE.POWER]
+                    else:
+                        temperature = random.uniform(20,30)
+                        values = [temperature]
                     data = {
-                        'value_type': value_type,
+                        'value_type': value_types,
                         'location' : location,
-                        'value' : value,
+                        'values' : values,
                         'status' : status
                     }
                     time.sleep(0.5)
@@ -76,15 +74,16 @@ def read_and_store_metrics() -> None:
                     # TODO implement real hardware read logic here
                     time.sleep(0.5)
                     continue
+                for i, val in enumerate(data['values']):
+                    new_metric = SystemMetric(
+                        value_type=data['value_type'][i].value, 
+                        value=val, 
+                        value_location=data['location'].value,
+                        status=data['status'].value
+                    )
+                    db.add(new_metric)
+                    db.commit()
                 
-                new_metric = SystemMetric(
-                    value_type=data['value_type'].value, 
-                    value=data['value'], 
-                    value_location=data['location'].value,
-                    status=data['status'].value
-                )
-                db.add(new_metric)
-                db.commit()
 
             except Exception as e:
                 print(f'Error: {e}')
