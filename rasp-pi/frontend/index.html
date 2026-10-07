@@ -115,8 +115,8 @@
                  <!-- Charts UI --> 
                 <article>
                     <div role="grid">
-                        <canvas id="dc1voltage" x-init="
-                            window.dc1_voltage_chart = new Chart($el, {
+                        <canvas id="dc1" x-init="
+                            window.dc1_chart = new Chart($el, {
                                 type: 'line',
                                 data: {
                                     labels: [],
@@ -133,37 +133,38 @@
                                         borderColor: '#163a55',
                                         backgroundColor: 'rgba(22, 58, 85, 0.25)',
                                         borderWidth: 2
-                                    }]
+                                    },
+                                    {
+                                        label: 'DC1 Power',
+                                        data: [],
+                                        borderColor: '#4A7C59',
+                                        backgroundColor: 'rgba(74, 124, 89, 0.25)',
+                                        borderWidth: 2
+                                    }
+                                    ]
                                 }
                             });
                         "></canvas>
+                        <div role="grid">
+                            <label for="dc1-voltage-toggle">
+                                <input type="checkbox" name="dc1-voltage-toggle" id="dc1-voltage-toggle" role="switch" checked>
+                                Voltage
+                            </label>
+                            <label for="dc1-current-toggle">
+                                <input type="checkbox" name="dc1-current-toggle" id="dc1-current-toggle" role="switch" checked>
+                                Current
+                            </label>
+                            <label for="dc1-power-toggle">
+                                <input type="checkbox" name="dc1-power-toggle" id="dc1-power-toggle" role="switch" checked>
+                                Power
+                            </label>
+                        </div>
                     </div>
                     
                 </article>
             </section>
             <section x-show="activeTab === 'settings'"> <!-- Settings UI --> </section>
             <section x-show="activeTab === 'troubleshooting'"> <!-- Troubleshooting UI --> </section>
-        </div>
-        <!-- Alpine.js component: initializes data and sets up a 1-second polling loop -->
-        <div>
-            <article>
-                <header>
-                    <strong>System Status: </strong>
-                    <span x-text="telemetry.status || 'Waiting for data...'"></span>
-                </header>
-                
-                <div class="grid">
-                    <div>
-                        <p><strong>Location:</strong> <span x-text="telemetry.value_location"></span></p>
-                    </div>
-                    <div>
-                        <p><strong>Type:</strong> <span x-text="telemetry.value_type"></span></p>
-                    </div>
-                    <div>
-                        <p><strong>Value:</strong> <span x-text="telemetry.value"></span></p>
-                    </div>
-                </div>
-            </article>
         </div>
         <label for="theme-toggle">
             <input type="checkbox" name="theme-toggle" id="theme-toggle" role="switch">
@@ -172,8 +173,44 @@
     </main>
 
     <script>
+        let dc1_voltage_toggle = document.getElementById("dc1-voltage-toggle");
+        dc1_voltage_toggle.addEventListener('change', () => {
+            if (dc1_voltage_toggle.checked) {
+                dc1_chart.setDatasetVisibility(0, true);
+            } else {
+                dc1_chart.setDatasetVisibility(0, false);
+            }
+        });
+        let dc1_current_toggle = document.getElementById("dc1-current-toggle");
+        dc1_current_toggle.addEventListener('change', () => {
+            if (dc1_current_toggle.checked) {
+                dc1_chart.setDatasetVisibility(1, true);
+            } else {
+                dc1_chart.setDatasetVisibility(1, false);
+            }
+        });
+        let dc1_power_toggle = document.getElementById("dc1-power-toggle");
+        dc1_power_toggle.addEventListener('change', () => {
+            if (dc1_power_toggle.checked) {
+                dc1_chart.setDatasetVisibility(2, true);
+            } else {
+                dc1_chart.setDatasetVisibility(2, false);
+            }
+        })
 
-        function add_data_to_chart(chart, new_label, new_value, data_type) {
+        function add_data_to_chart(chart, voltage_val, current_val, power_val, timestamp) {
+            chart.data.labels.push(timestamp);
+            
+            chart.data.datasets[0].data.push(voltage_val);
+            chart.data.datasets[1].data.push(current_val);
+            chart.data.datasets[2].data.push(power_val);
+
+            if (chart.data.labels.length > 50) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+                chart.data.datasets[1].data.shift();
+                chart.data.datasets[2].data.shift();
+            }
 
             chart.update();
         }
@@ -189,7 +226,7 @@
                     this.getDC1Metrics();
                     setInterval(() => {
                         this.getDC1Metrics();
-                    }, 500); 
+                    }, 1000); 
                 },
                 async fetchMetrics() {
                     try {
@@ -207,9 +244,14 @@
                         if (dc1response.ok) {
                             this.dc1metrics = await dc1response.json();
                         }
-                        for (let i = 0; i < this.dc1metrics.values.length; i++) {
-                            console.log(this.dc1metrics.values[i]);
-                        }
+                        let time = this.dc1metrics[0].timestamp.substring(11,19);
+                        add_data_to_chart(
+                                dc1_chart, 
+                                this.dc1metrics[0].voltage_value,
+                                this.dc1metrics[0].current_value,
+                                this.dc1metrics[0].power_value,
+                                time,
+                            );
                     } catch (error) {
                         console.error('DC1 Metrics could not be read:', error);
                     }

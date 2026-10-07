@@ -16,11 +16,11 @@ class SystemMetric(Base):
     # Time stamp
     timestamp: Column = Column(DateTime, default=datetime.utcnow, index=True)
 
-    # Value type
-    value_type: Column = Column(Integer, nullable=False)
-
     # Value
-    value: Column = Column(Float, nullable=False)
+    voltage_value: Column = Column(Float, nullable=False)
+    current_value: Column = Column(Float, nullable=False)
+    power_value: Column = Column(Float, nullable=False)
+    temp_value: Column = Column(Float, nullable=False, default=0.0)
 
     # Location
     value_location: Column = Column(Integer, nullable=False)

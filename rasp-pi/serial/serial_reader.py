@@ -74,15 +74,16 @@ def read_and_store_metrics() -> None:
                     # TODO implement real hardware read logic here
                     time.sleep(0.5)
                     continue
-                for i, val in enumerate(data['values']):
-                    new_metric = SystemMetric(
-                        value_type=data['value_type'][i].value, 
-                        value=val, 
-                        value_location=data['location'].value,
-                        status=data['status'].value
-                    )
-                    db.add(new_metric)
-                    db.commit()
+                
+                new_metric = SystemMetric(
+                    voltage_value=data['values'][0],
+                    current_value=data['values'][1],
+                    power_value=data['values'][2],
+                    value_location=data['location'].value,
+                    status=data['status'].value
+                )
+                db.add(new_metric)
+                db.commit()
                 
 
             except Exception as e:
