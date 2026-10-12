@@ -12,7 +12,11 @@ init_db()
 SIMULATION_MODE = False
 # Check for serial port
 try:
-    serial_port = serial.Serial(port="/dev/serial0", baudrate=115200, timeout=1)
+    serial_port = serial.Serial(
+        port="/dev/serial0", 
+        baudrate=9600,
+        timeout=1
+    )
 except serial.SerialException:
     print("WARNING: Hardware not found, entering laptop simulation mode.")
     SIMULATION_MODE = True
@@ -76,10 +80,52 @@ def read_and_store_metrics() -> None:
                             if serial_port.in_waiting > 0:
                                 # Read the line, decode bytes to string, and strip trailing whitespace
                                 message = serial_port.readline().decode('utf-8').rstrip()
-                                print(message)
+                                #print(message, flush=True)
                     except KeyboardInterrupt:
                         serial_port.close()
                     # TODO implement real hardware read logic here
+                    # Process string
+                    if message[0:1] != "ne":
+                        # want to make sure this is a valid string
+                        continue
+                    while message != 'ee':
+                        message = message[2:] # Remove 'ne' for new entry
+                        if message[0:2] == 'DC1': # This is a dc1 entry
+                            location = LOCATION.DC1
+                            message = message[3:] # Remove location identifier
+                            value_str = message[0:5] # The next 6 characters are a float value
+                            value = float(value_str)
+                            message = message[7:] # Remove the value from the string
+                            
+                            new_metric = SystemMetric(
+                                voltage_value=value,
+                                current_value=0,
+                                power_value=0,
+                                value_location=location.value,
+                                status=BORTO_STATUS.OK
+                            )
+                            db.add(new_metric)
+                            db.commit()
+                            continue
+                        if message[0:2] == "BAT": # This is a battery entry
+                            location = LOCATION.BATTERY
+                            message = message[2:]
+                            value_str = message[0:5]
+                            value = float(value_str)
+                            message = message[7:]
+
+                            new_metric = SystemMetric(
+                                voltage_value=value,
+                                current_value=0,
+                                power_value=0,
+                                value_location=location.value,
+                                status=BORTO_STATUS.OK
+                            )
+                            db.add(new_metric)
+                            db.commit()
+                            continue
+                        if len(message) < 2:
+                            break
                     continue
                 
                 new_metric = SystemMetric(
@@ -94,7 +140,7 @@ def read_and_store_metrics() -> None:
                 
 
             except Exception as e:
-                print(f'Error: {e}')
+                print(f'Error: {e}', flush=True)
             
 
 if __name__ == '__main__':
