@@ -71,8 +71,15 @@ def read_and_store_metrics() -> None:
                     }
                     time.sleep(0.5)
                 else:
+                    try:
+                        while True:
+                            if serial_port.in_waiting > 0:
+                                # Read the line, decode bytes to string, and strip trailing whitespace
+                                message = serial_port.readline().decode('utf-8').rstrip()
+                                print(message)
+                    except KeyboardInterrupt:
+                        serial_port.close()
                     # TODO implement real hardware read logic here
-                    time.sleep(0.5)
                     continue
                 
                 new_metric = SystemMetric(
