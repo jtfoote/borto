@@ -81,52 +81,51 @@ def read_and_store_metrics() -> None:
                                 # Read the line, decode bytes to string, and strip trailing whitespace
                                 message = serial_port.readline().decode('utf-8').rstrip()
                                 #print(message, flush=True)
+                                # Process string
+                                if message[0:2] != "ne":
+                                    # want to make sure this is a valid string
+                                    continue
+                                while message != 'ee':
+                                    message = message[2:] # Remove 'ne' for new entry
+                                    if message[0:3] == 'DC1': # This is a dc1 entry
+                                        location = LOCATION.DC1
+                                        message = message[3:] # Remove location identifier
+                                        value_str = message[0:6] # The next 6 characters are a float value
+                                        value = float(value_str)
+                                        message = message[7:] # Remove the value from the string
+                                        
+                                        new_metric = SystemMetric(
+                                            voltage_value=value,
+                                            current_value=0,
+                                            power_value=0,
+                                            value_location=location.value,
+                                            status=BORTO_STATUS.OK.value
+                                        )
+                                        db.add(new_metric)
+                                        db.commit()
+                                        continue
+                                    if message[0:3] == "BAT": # This is a battery entry
+                                        location = LOCATION.BATTERY
+                                        message = message[3:]
+                                        value_str = message[0:6]
+                                        value = float(value_str)
+                                        message = message[7:]
+
+                                        new_metric = SystemMetric(
+                                            voltage_value=value,
+                                            current_value=0,
+                                            power_value=0,
+                                            value_location=location.value,
+                                            status=BORTO_STATUS.OK.value
+                                        )
+                                        db.add(new_metric)
+                                        db.commit()
+                                        continue
+                                    if len(message) < 2:
+                                        break
                     except KeyboardInterrupt:
                         serial_port.close()
-                    # TODO implement real hardware read logic here
-                    # Process string
-                    if message[0:1] != "ne":
-                        # want to make sure this is a valid string
-                        continue
-                    while message != 'ee':
-                        message = message[2:] # Remove 'ne' for new entry
-                        if message[0:2] == 'DC1': # This is a dc1 entry
-                            location = LOCATION.DC1
-                            message = message[3:] # Remove location identifier
-                            value_str = message[0:5] # The next 6 characters are a float value
-                            value = float(value_str)
-                            message = message[7:] # Remove the value from the string
-                            
-                            new_metric = SystemMetric(
-                                voltage_value=value,
-                                current_value=0,
-                                power_value=0,
-                                value_location=location.value,
-                                status=BORTO_STATUS.OK
-                            )
-                            db.add(new_metric)
-                            db.commit()
-                            continue
-                        if message[0:2] == "BAT": # This is a battery entry
-                            location = LOCATION.BATTERY
-                            message = message[2:]
-                            value_str = message[0:5]
-                            value = float(value_str)
-                            message = message[7:]
-
-                            new_metric = SystemMetric(
-                                voltage_value=value,
-                                current_value=0,
-                                power_value=0,
-                                value_location=location.value,
-                                status=BORTO_STATUS.OK
-                            )
-                            db.add(new_metric)
-                            db.commit()
-                            continue
-                        if len(message) < 2:
-                            break
-                    continue
+                    continue    
                 
                 new_metric = SystemMetric(
                     voltage_value=data['values'][0],
