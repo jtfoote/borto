@@ -18,7 +18,7 @@ try:
         timeout=1
     )
 except serial.SerialException:
-    print("WARNING: Hardware not found, entering laptop simulation mode.")
+    print("WARNING: Hardware not found, entering laptop simulation mode.", flush=True)
     SIMULATION_MODE = True
 
 def generate_voltage_val(location: LOCATION, time: int) -> float:

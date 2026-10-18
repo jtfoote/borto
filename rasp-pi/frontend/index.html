@@ -145,7 +145,7 @@
                                 }
                             });
                         "></canvas>
-                        <div role="grid">
+                        <div role="group">
                             <label for="dc1-voltage-toggle">
                                 <input type="checkbox" name="dc1-voltage-toggle" id="dc1-voltage-toggle" role="switch" checked>
                                 Voltage
@@ -156,6 +156,52 @@
                             </label>
                             <label for="dc1-power-toggle">
                                 <input type="checkbox" name="dc1-power-toggle" id="dc1-power-toggle" role="switch" checked>
+                                Power
+                            </label>
+                        </div>
+                    </div>
+                    <div role="grid">
+                        <canvas id="batt" x-init="
+                            window.batt_chart = new Chart($el, {
+                                type: 'line',
+                                data: {
+                                    labels: [],
+                                    datasets: [{
+                                        label: 'Battery Voltage',
+                                        data: [],
+                                        borderColor: '#e36916',
+                                        backgroundColor: 'rgba(227, 105, 22, 0.2)',
+                                        borderWidth: 2
+                                    },
+                                    {
+                                        label: 'Battery Current',
+                                        data: [],
+                                        borderColor: '#163a55',
+                                        backgroundColor: 'rgba(22, 58, 85, 0.25)',
+                                        borderWidth: 2
+                                    },
+                                    {
+                                        label: 'Battery Power',
+                                        data: [],
+                                        borderColor: '#4A7C59',
+                                        backgroundColor: 'rgba(74, 124, 89, 0.25)',
+                                        borderWidth: 2
+                                    }
+                                    ]
+                                }
+                            });
+                        "></canvas>
+                        <div role="group">
+                            <label for="batt-voltage-toggle">
+                                <input type="checkbox" name="batt-voltage-toggle" id="batt-voltage-toggle" role="switch" checked>
+                                Voltage
+                            </label>
+                            <label for="batt-current-toggle">
+                                <input type="checkbox" name="batt-current-toggle" id="batt-current-toggle" role="switch" checked>
+                                Current
+                            </label>
+                            <label for="batt-power-toggle">
+                                <input type="checkbox" name="batt-power-toggle" id="batt-power-toggle" role="switch" checked>
                                 Power
                             </label>
                         </div>
@@ -180,6 +226,7 @@
             } else {
                 dc1_chart.setDatasetVisibility(0, false);
             }
+            dc1_chart.update();
         });
         let dc1_current_toggle = document.getElementById("dc1-current-toggle");
         dc1_current_toggle.addEventListener('change', () => {
@@ -188,6 +235,7 @@
             } else {
                 dc1_chart.setDatasetVisibility(1, false);
             }
+            dc1_chart.update();
         });
         let dc1_power_toggle = document.getElementById("dc1-power-toggle");
         dc1_power_toggle.addEventListener('change', () => {
@@ -196,9 +244,50 @@
             } else {
                 dc1_chart.setDatasetVisibility(2, false);
             }
+            dc1_chart.update();
+        })
+
+        let batt_voltage_toggle = document.getElementById("batt-voltage-toggle");
+        batt_voltage_toggle.addEventListener('change', () => {
+            if (batt_voltage_toggle.checked) {
+                batt_chart.setDatasetVisibility(0, true);
+            } else {
+                batt_chart.setDatasetVisibility(0, false);
+            }
+            batt_chart.update();
+        });
+        let batt_current_toggle = document.getElementById("batt-current-toggle");
+        batt_current_toggle.addEventListener('change', () => {
+            if (batt_current_toggle.checked) {
+                batt_chart.setDatasetVisibility(1, true);
+            } else {
+                batt_chart.setDatasetVisibility(1, false);
+            }
+            batt_chart.update();
+        });
+        let batt_power_toggle = document.getElementById("batt-power-toggle");
+        batt_power_toggle.addEventListener('change', () => {
+            if (batt_power_toggle.checked) {
+                batt_chart.setDatasetVisibility(2, true);
+            } else {
+                batt_chart.setDatasetVisibility(2, false);
+            }
+            batt_chart.update();
         })
 
         function add_data_to_chart(chart, voltage_val, current_val, power_val, timestamp) {
+            // Guard clause prevents duplicate data entries 
+            if (
+                (voltage_val === chart.data.datasets[0].data.at(-1)) &&
+                (current_val === chart.data.datasets[1].data.at(-1)) &&
+                (power_val === chart.data.datasets[2].data.at(-1)) &&
+                (timestamp === chart.data.labels.at(-1))
+            )
+            {
+                console.log("Duplicate values");
+                return;
+            }
+            
             chart.data.labels.push(timestamp);
             
             chart.data.datasets[0].data.push(voltage_val);
@@ -220,23 +309,16 @@
                 activeTab: 'dashboard',
                 telemetry: {},
                 dc1metrics: {},
+                battmetrics: {},
                 startPolling() {
-                    this.fetchMetrics();
-                    setInterval(() => this.fetchMetrics(), 500);
                     this.getDC1Metrics();
                     setInterval(() => {
                         this.getDC1Metrics();
-                    }, 1000); 
-                },
-                async fetchMetrics() {
-                    try {
-                        const response = await fetch('/api/metrics/latest');
-                        if (response.ok) {
-                            this.telemetry = await response.json();
-                        }
-                    } catch (error) {
-                        console.error('Connection to backend lost:', error);
-                    }
+                    }, 500); 
+                    this.getBattMetrics();
+                    setInterval(() => {
+                        this.getBattMetrics();
+                    }, 500);
                 },
                 async getDC1Metrics () {
                     try {
@@ -255,7 +337,25 @@
                     } catch (error) {
                         console.error('DC1 Metrics could not be read:', error);
                     }
-                }
+                },
+                async getBattMetrics () {
+                    try {
+                        const battresponse = await fetch('/api/metrics/batt');
+                        if (battresponse.ok) {
+                            this.battmetrics = await battresponse.json();
+                        }
+                        let time = this.battmetrics[0].timestamp.substring(11,19);
+                        add_data_to_chart(
+                                batt_chart, 
+                                this.battmetrics[0].voltage_value,
+                                this.battmetrics[0].current_value,
+                                this.battmetrics[0].power_value,
+                                time,
+                            );
+                    } catch (error) {
+                        console.error('Battery Metrics could not be read:', error);
+                    }
+                },
             }))
         });
 

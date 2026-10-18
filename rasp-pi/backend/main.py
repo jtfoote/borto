@@ -20,3 +20,11 @@ def get_dc1():
         statement = select(SystemMetric).where(SystemMetric.value_location == 2).order_by(desc(SystemMetric.id)).limit(50)
         values = db.execute(statement).scalars().all()[::-1]
         return values
+
+@app.get("/api/metrics/batt")
+def get_batt():
+    # Grab all values with location 2, i.e., in the dc1 output
+    with Session(engine) as db:
+        statement = select(SystemMetric).where(SystemMetric.value_location == 3).order_by(desc(SystemMetric.id)).limit(50)
+        values = db.execute(statement).scalars().all()[::-1]
+        return values

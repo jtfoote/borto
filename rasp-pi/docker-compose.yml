@@ -25,9 +25,9 @@ services:
       - PYTHONBUFFERED=1
     volumes:
       - sqlite_data:/app/data
-    devices:
-      - "/dev/serial0:/dev/serial0" # STM32 UART
-      - "/dev/ttyS0:/dev/ttyS0"
+    #devices:
+    #  - "/dev/serial0:/dev/serial0" # STM32 UART
+    #  - "/dev/ttyS0:/dev/ttyS0"
    #  - "/dev/i2c-1:/dev/i2c-1"     # I2C Display
     restart: always
 
