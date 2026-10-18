@@ -1,4 +1,4 @@
-from RPLCD import charLCD
+from RPLCD.i2c import CharLCD
 import time
 
 lcd = CharLCD(
@@ -11,7 +11,7 @@ lcd = CharLCD(
 
 try:
     lcd.clear()
-    lcd.write_string("Hello, world!")
+    lcd.write_string("Badussy!")
     lcd.cursor_pos = (1, 0)
     lcd.write_string("Raspberry Pi")
     time.sleep(10)
