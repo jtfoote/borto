@@ -11,9 +11,9 @@ lcd = CharLCD(
 
 try:
     lcd.clear()
-    lcd.write_string("Badussy!")
+    lcd.write_string("Hello MGMT-5078!")
     lcd.cursor_pos = (1, 0)
-    lcd.write_string("Raspberry Pi")
+    lcd.write_string("From BBF Inc.")
     time.sleep(10)
 finally:
     lcd.clear()
