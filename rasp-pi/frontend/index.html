@@ -29,6 +29,8 @@
                 --pico-secondary-hover-background: #c25912;
                 --pico-secondary-focus: rgba(227, 105, 22, 0.25);
                 --pico-secondary-inverse: #ffffff;
+
+                --data-background-colour: #dedede;
             }
 
         [data-theme="dark"] {
@@ -47,6 +49,8 @@
                 --pico-secondary-hover-background: #c25912;
                 --pico-secondary-focus: rgba(227, 105, 22, 0.25);
                 --pico-secondary-inverse: #F5F5F5;
+
+                --data-background-colour: #3f3f3f;
             }
 
         .logos:hover {
@@ -63,7 +67,7 @@
 
         .metrics-value {
             font-family: "PT Sans", sans-serif;
-            font-size: 2em;
+            font-size: 1.5em;
             align-self: center;
             text-align: center;
         }
@@ -84,9 +88,9 @@
                     style="height:7em;" 
                 />
             </a>
-            <div x-data="{ activeTab: 'dashboard'}">
+            <div>
                 <a href="https://github.com/jtfoote/borto" target="_blank" style="padding: 1em; text-decoration: none;">
-                    <img class="logos" src="images/GitHub_Invertocat_Black.svg" alt="Github Logo" style="height:2em;"/>
+                    <img class="logos" src="images/ghlogo.svg" alt="Github Logo" style="height:2em;"/>
                 </a>
                 <a href="https://sites.google.com/view/theborto" target="_blank" style="text-decoration: none;">
                     <img class="logos" src="images/logo.svg" alt="BBF Logo" style="height:2em;" />
@@ -135,107 +139,173 @@
                 <br>
                  <article>
                     <div role="grid">
-                        <div>
-                            <article>
-                                <h2>DC1 Voltage</h2>
-                                <div role="group" style="flex-wrap: wrap;">
-                                    <article>
-                                        <div role="grid">
-                                            <header><h3>Average</h3></header>
-                                            <div style="display:grid; grid-template-columns: 1fr 1fr;">
-                                                <article style="padding: 0; background-color: #dedede; border-radius: 25px;">
-                                                    <p class="metrics-value" style="padding-top:0.3em;" id="dc1-average-voltage">
-                                                        25.0
-                                                    </p>
-                                                </article>
-                                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
-                                            </div>
+                        <details name="example">
+                            <summary role="button">DC1</summary>
+                            <div role="group" style="flex-wrap: wrap;">
+                                <article>
+                                    <div role="grid">
+                                        <header><h3>Average</h3></header>
+                                        <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                            <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                                <p class="metrics-value" style="padding-top:0.5em;" id="dc1-average-voltage">
+                                                    25.0
+                                                </p>
+                                            </article>
+                                            <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
                                         </div>
-                                    </article>
-                                    <article>
-                                        <div role="grid">
-                                            <header><h3>Current</h3></header>
-                                            <div style="display:grid; grid-template-columns: 1fr 1fr;">
-                                                <article style="padding: 0; background-color: #dedede; border-radius: 25px;">
-                                                    <p class="metrics-value" style="padding-top:0.3em;" id="dc1-current-voltage">
-                                                        25.0
-                                                    </p>
-                                                </article>
-                                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
-                                            </div>
-                                        </div>
-                                    </article>
-                                    <article>
-                                        <div role="grid">
-                                            <header><h3>Maximum</h3></header>
-                                            <div style="display:grid; grid-template-columns: 1fr 1fr;">
-                                                <article style="padding: 0; background-color: #dedede; border-radius: 25px;">
-                                                    <p class="metrics-value" style="padding-top:0.3em;" id="dc1-maximum-voltage">
-                                                        25.0
-                                                    </p>
-                                                </article>
-                                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
-                                            </div>
-                                        </div>
-                                    </article>
-                                    <article>
-                                        <div role="grid">
-                                            <header><h3>Minimum</h3></header>
-                                            <div style="display:grid; grid-template-columns: 1fr 1fr;">
-                                                <article style="padding: 0; background-color: #dedede; border-radius: 25px;">
-                                                    <p class="metrics-value" style="padding-top:0.3em;" id="dc1-minimum-voltage">
-                                                        25.0
-                                                    </p>
-                                                </article>
-                                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
-                                            </div>
-                                        </div>
-                                    </article>
-                                </div>
-                                <canvas id="dc1" x-init="
-                                        window.dc1_chart = new Chart($el, {
-                                            type: 'line',
-                                            data: {
-                                                labels: [],
-                                                datasets: [{
-                                                    label: 'DC1 Voltage',
-                                                    data: [],
-                                                    borderColor: '#e36916',
-                                                    backgroundColor: 'rgba(227, 105, 22, 0.2)',
-                                                    borderWidth: 2,
-                                                    tension: 0.1
-                                                },
-                                                {
-                                                    label: 'DC1 Average Voltage',
-                                                    data: [],
-                                                    borderColor: '#9abdd6',
-                                                    borderWidth: 2,
-                                                    tension: 0.2
-                                                }]
-                                            },
-                                            options: {
-                                                animation: {
-                                                    duration: 300
-                                                }
-                                            }
-                                        });
-                                    "></canvas>
-                                    <div role="group">
-                                        <label for="dc1-voltage-toggle">
-                                            <input type="checkbox" name="dc1-voltage-toggle" id="dc1-voltage-toggle" role="switch" checked>
-                                            Voltage
-                                        </label>
-                                        <label for="dc1-average-voltage-toggle">
-                                            <input type="checkbox" name="dc1-average-voltage-toggle" id="dc1-average-voltage-toggle" role="switch">
-                                            Avg. Voltage
-                                        </label>
                                     </div>
-                            </article>
-                        </div>
-                        
+                                </article>
+                                <article>
+                                    <div role="grid">
+                                        <header><h3>Current</h3></header>
+                                        <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                            <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                                <p class="metrics-value" style="padding-top:0.5em;" id="dc1-current-voltage">
+                                                    25.0
+                                                </p>
+                                            </article>
+                                            <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                                        </div>
+                                    </div>
+                                </article>
+                                <article>
+                                    <div role="grid">
+                                        <header><h3>Maximum</h3></header>
+                                        <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                            <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                                <p class="metrics-value" style="padding-top:0.5em;" id="dc1-maximum-voltage">
+                                                    25.0
+                                                </p>
+                                            </article>
+                                            <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                                        </div>
+                                    </div>
+                                </article>
+                                <article>
+                                    <div role="grid">
+                                        <header><h3>Minimum</h3></header>
+                                        <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                            <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                                <p class="metrics-value" style="padding-top:0.5em;" id="dc1-minimum-voltage">
+                                                    25.0
+                                                </p>
+                                            </article>
+                                            <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                            <canvas id="dc1" x-init="
+                                    window.dc1_chart = new Chart($el, {
+                                        type: 'line',
+                                        data: {
+                                            labels: [],
+                                            datasets: [{
+                                                label: 'DC1 Voltage',
+                                                data: [],
+                                                borderColor: '#e36916',
+                                                backgroundColor: 'rgba(227, 105, 22, 0.2)',
+                                                borderWidth: 2,
+                                                tension: 0.1
+                                            },
+                                            {
+                                                label: 'DC1 Average Voltage',
+                                                data: [],
+                                                borderColor: '#9abdd6',
+                                                borderWidth: 2,
+                                                tension: 0.2,
+                                                pointStyle: false,
+                                            }]
+                                        },
+                                        options: {
+                                            animation: {
+                                                duration: 300
+                                            }
+                                        }
+                                    });
+                                "></canvas>
+                                <div role="group">
+                                    <label for="dc1-voltage-toggle">
+                                        <input type="checkbox" name="dc1-voltage-toggle" id="dc1-voltage-toggle" role="switch" checked>
+                                        Voltage
+                                    </label>
+                                    <label for="dc1-average-voltage-toggle">
+                                        <input type="checkbox" name="dc1-average-voltage-toggle" id="dc1-average-voltage-toggle" role="switch">
+                                        Avg. Voltage
+                                    </label>
+                                </div>
+                        </details>
+                    <hr />
                     </div>
                     <div role="grid">
-                        <div role="grid">
+                        <details name="example">
+                            <summary role="button">Battery</summary>
+                            <div role="group" style="flex-wrap: wrap;">
+                                <article>
+                                    <div role="grid">
+                                        <header><h3>Average</h3></header>
+                                        <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                            <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                                <p class="metrics-value" style="padding-top:0.5em;" id="batt-average-voltage">
+                                                    25.0
+                                                </p>
+                                            </article>
+                                            <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                                            <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                                <p class="metrics-value" style="padding-top:0.5em;" id="batt-average-current">
+                                                    25.0
+                                                </p>
+                                            </article>
+                                            <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">A</p>
+                                        </div>
+                                    </div>
+                                </article>
+                                <article>
+                                    <div role="grid">
+                                        <header><h3>Current</h3></header>
+                                        <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                            <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                                <p class="metrics-value" style="padding-top:0.5em;" id="batt-current-voltage">
+                                                    25.0
+                                                </p>
+                                            </article>
+                                            <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                                            <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                                <p class="metrics-value" style="padding-top:0.5em;" id="batt-current-current">
+                                                    25.0
+                                                </p>
+                                            </article>
+                                            <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">A</p>
+                                        </div>
+                                    </div>
+                                </article>
+                                <article>
+                                    <div role="grid">
+                                        <header><h3>Maximum</h3></header>
+                                        <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                            <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                                <p class="metrics-value" style="padding-top:0.5em;" id="batt-maximum-voltage">
+                                                    25.0
+                                                </p>
+                                            </article>
+                                            <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                                        </div>
+                                    </div>
+                                </article>
+                                <article>
+                                    <div role="grid">
+                                        <header><h3>Minimum</h3></header>
+                                        <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                            <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                                <p class="metrics-value" style="padding-top:0.5em;" id="batt-minimum-voltage">
+                                                    25.0
+                                                </p>
+                                            </article>
+                                            <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
                             <div style="position: relative; width: 100%;">
                                 <canvas id="batt" x-init="
                                     window.batt_chart = new Chart($el, {
@@ -275,26 +345,23 @@
                                         }
                                     });
                                 "></canvas>
+                                <div role="group">
+                                    <label for="batt-voltage-toggle">
+                                        <input type="checkbox" name="batt-voltage-toggle" id="batt-voltage-toggle" role="switch" checked>
+                                        Voltage
+                                    </label>
+                                    <label for="batt-current-toggle">
+                                        <input type="checkbox" name="batt-current-toggle" id="batt-current-toggle" role="switch" checked>
+                                        Current
+                                    </label>
+                                    <label for="batt-power-toggle">
+                                        <input type="checkbox" name="batt-power-toggle" id="batt-power-toggle" role="switch" checked>
+                                        Power
+                                    </label>
+                                </div>
                             </div>
-                            
-                            <article>
-                                Test
-                            </article>
-                        </div>
-                        <div role="group">
-                            <label for="batt-voltage-toggle">
-                                <input type="checkbox" name="batt-voltage-toggle" id="batt-voltage-toggle" role="switch" checked>
-                                Voltage
-                            </label>
-                            <label for="batt-current-toggle">
-                                <input type="checkbox" name="batt-current-toggle" id="batt-current-toggle" role="switch" checked>
-                                Current
-                            </label>
-                            <label for="batt-power-toggle">
-                                <input type="checkbox" name="batt-power-toggle" id="batt-power-toggle" role="switch" checked>
-                                Power
-                            </label>
-                        </div>
+                        </details>
+                        
                     </div>
                     
                 </article>
@@ -309,6 +376,26 @@
     </main>
 
     <script>
+        let dc1_voltage_toggle = document.getElementById("dc1-voltage-toggle");
+        dc1_voltage_toggle.addEventListener('change', () => {
+            if (dc1_voltage_toggle.checked) {
+                dc1_chart.setDatasetVisibility(0, true);
+            } else {
+                dc1_chart.setDatasetVisibility(0, false);
+            }
+            dc1_chart.update();
+        })
+
+        let dc1_average_voltage_toggle = document.getElementById("dc1-average-voltage-toggle");
+        dc1_average_voltage_toggle.addEventListener('change', () => {
+            if (dc1_average_voltage_toggle.checked) {
+                dc1_chart.setDatasetVisibility(1, true);
+            } else {
+                dc1_chart.setDatasetVisibility(1, false);
+            }
+            dc1_chart.update();
+        })
+
         let batt_voltage_toggle = document.getElementById("batt-voltage-toggle");
         batt_voltage_toggle.addEventListener('change', () => {
             if (batt_voltage_toggle.checked) {
@@ -379,8 +466,6 @@
                 return;
             }
             
-
-
             chart.data.labels.push(timestamp);
             chart.data.datasets[0].data.push(voltage);
 
@@ -396,8 +481,29 @@
                 update_min_dc1(voltage);
                 update_dc1_average(voltage);
             }
-
             chart.update();
+        }
+
+        function update_current_batt_values(voltage, current) {
+            let current_batt_voltage = document.getElementById("batt-current-voltage");
+            current_batt_voltage.textContent = voltage.toFixed(1);
+            let current_batt_current = document.getElementById("batt-current-current");
+            current_batt_current.textContent = current.toFixed(1);
+        }
+
+        let batt_value_count = 0;
+        let batt_average_voltage = 0;
+        let batt_average_current = 0;
+        function update_batt_average(voltage, current) {
+            batt_average_voltage = ((batt_average_voltage * batt_value_count) + voltage) / (batt_value_count + 1);
+            batt_average_current = ((batt_average_current * batt_value_count) + current) / (batt_value_count + 1);
+            batt_value_count++;
+            let batt_avg_voltage = document.getElementById("batt-average-voltage");
+            let batt_avg_current = document.getElementById("batt-average-current");
+            batt_avg_voltage.textContent = batt_average_voltage.toFixed(1);
+            batt_avg_current.textContent = batt_average_current.toFixed(1);
+
+            // dc1_chart.data.datasets[1].data.push(dc1_average_voltage);
         }
 
         function add_battery_data_to_chart(chart, voltage, current, power, timestamp) {
@@ -425,6 +531,9 @@
                 chart.data.datasets[1].data.shift();
                 chart.data.datasets[2].data.shift();
             }
+
+            update_current_batt_values(voltage, current);
+            update_batt_average(voltage, current);
 
             chart.update();
         }
