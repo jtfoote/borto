@@ -4,5 +4,4 @@ COPY serial/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY shared/ ./shared/
 COPY serial/ .
-CMD ["python", "serial_reader.py"]
-CMD ["python", "serial_lcd.py"]
+CMD ["python", "main.py"]

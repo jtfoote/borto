@@ -17,10 +17,9 @@ class SystemMetric(Base):
     timestamp: Column = Column(DateTime, default=datetime.utcnow, index=True)
 
     # Value
-    voltage_value: Column = Column(Float, nullable=False)
-    current_value: Column = Column(Float, nullable=False)
-    power_value: Column = Column(Float, nullable=False)
-    temp_value: Column = Column(Float, nullable=False, default=0.0)
+    voltage_value: Column = Column(Float)
+    current_value: Column = Column(Float)
+    temp_value: Column = Column(Float)
 
     # Location
     value_location: Column = Column(Integer, nullable=False)
@@ -42,12 +41,11 @@ class VAL_TYPE(Enum):
     TEMPERATURE = 4
 
 class LOCATION(Enum):
-    RECTIFIER = 1
-    DC1 = 2
-    BATTERY = 3
-    DC2 = 4
-    INVERTER = 5
-    ENCLOSURE = 6
+    DC1 = 1
+    BATTERY = 2
+    DC2 = 3
+    INVERTER = 4
+    ENCLOSURE = 5
 
 class BORTO_STATUS(Enum):
     OK = 1

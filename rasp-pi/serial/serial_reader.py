@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from shared.models import engine, SystemMetric, init_db, VAL_TYPE, LOCATION, BORTO_STATUS
+from serial_lcd import write_to_lcd
 import time
 import serial
 import random
@@ -139,8 +140,4 @@ def read_and_store_metrics() -> None:
 
             except Exception as e:
                 print(f'Error: {e}', flush=True)
-            
-
-if __name__ == '__main__':
-    read_and_store_metrics()
     

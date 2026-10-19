@@ -8,6 +8,9 @@
      <link rel="icon" href="images/borto-icon.svg">
     <!-- Link your local Pico CSS file -->
     <link rel="stylesheet" href="css/pico.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
     <style>
         [data-theme="light"],
         :root:not([data-theme="dark"]) {
@@ -57,6 +60,13 @@
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             justify-items: end;
         }
+
+        .metrics-value {
+            font-family: "PT Sans", sans-serif;
+            font-size: 2em;
+            align-self: center;
+            text-align: center;
+        }
     </style>
     <!-- Load chart.js -->
      <script src="chart.umd.js"></script>
@@ -99,9 +109,18 @@
                 x-transition:leave.duration.50ms
                 >
                 <!-- Dashboard UI -->
+                <br>
                 <div>
                     <article>
                         This is the dashboard!
+                        <div role="grid">
+                            <div role="group">
+                                
+                            </div>
+                            <div role="group">
+
+                            </div>
+                        </div>
                     </article>
                 </div>
             </section>
@@ -113,84 +132,155 @@
                 x-transition:leave.duration.50ms
                 >
                  <!-- Charts UI --> 
-                <article>
+                <br>
+                 <article>
                     <div role="grid">
-                        <canvas id="dc1" x-init="
-                            window.dc1_chart = new Chart($el, {
-                                type: 'line',
-                                data: {
-                                    labels: [],
-                                    datasets: [{
-                                        label: 'DC1 Voltage',
-                                        data: [],
-                                        borderColor: '#e36916',
-                                        backgroundColor: 'rgba(227, 105, 22, 0.2)',
-                                        borderWidth: 2
-                                    },
-                                    {
-                                        label: 'DC1 Current',
-                                        data: [],
-                                        borderColor: '#163a55',
-                                        backgroundColor: 'rgba(22, 58, 85, 0.25)',
-                                        borderWidth: 2
-                                    },
-                                    {
-                                        label: 'DC1 Power',
-                                        data: [],
-                                        borderColor: '#4A7C59',
-                                        backgroundColor: 'rgba(74, 124, 89, 0.25)',
-                                        borderWidth: 2
-                                    }
-                                    ]
-                                }
-                            });
-                        "></canvas>
-                        <div role="group">
-                            <label for="dc1-voltage-toggle">
-                                <input type="checkbox" name="dc1-voltage-toggle" id="dc1-voltage-toggle" role="switch" checked>
-                                Voltage
-                            </label>
-                            <label for="dc1-current-toggle">
-                                <input type="checkbox" name="dc1-current-toggle" id="dc1-current-toggle" role="switch" checked>
-                                Current
-                            </label>
-                            <label for="dc1-power-toggle">
-                                <input type="checkbox" name="dc1-power-toggle" id="dc1-power-toggle" role="switch" checked>
-                                Power
-                            </label>
+                        <div>
+                            <article>
+                                <h2>DC1 Voltage</h2>
+                                <div role="group" style="flex-wrap: wrap;">
+                                    <article>
+                                        <div role="grid">
+                                            <header><h3>Average</h3></header>
+                                            <div style="display:grid; grid-template-columns: 1fr 1fr;">
+                                                <article style="padding: 0; background-color: #dedede; border-radius: 25px;">
+                                                    <p class="metrics-value" style="padding-top:0.3em;" id="dc1-average-voltage">
+                                                        25.0
+                                                    </p>
+                                                </article>
+                                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                                            </div>
+                                        </div>
+                                    </article>
+                                    <article>
+                                        <div role="grid">
+                                            <header><h3>Current</h3></header>
+                                            <div style="display:grid; grid-template-columns: 1fr 1fr;">
+                                                <article style="padding: 0; background-color: #dedede; border-radius: 25px;">
+                                                    <p class="metrics-value" style="padding-top:0.3em;" id="dc1-current-voltage">
+                                                        25.0
+                                                    </p>
+                                                </article>
+                                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                                            </div>
+                                        </div>
+                                    </article>
+                                    <article>
+                                        <div role="grid">
+                                            <header><h3>Maximum</h3></header>
+                                            <div style="display:grid; grid-template-columns: 1fr 1fr;">
+                                                <article style="padding: 0; background-color: #dedede; border-radius: 25px;">
+                                                    <p class="metrics-value" style="padding-top:0.3em;" id="dc1-maximum-voltage">
+                                                        25.0
+                                                    </p>
+                                                </article>
+                                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                                            </div>
+                                        </div>
+                                    </article>
+                                    <article>
+                                        <div role="grid">
+                                            <header><h3>Minimum</h3></header>
+                                            <div style="display:grid; grid-template-columns: 1fr 1fr;">
+                                                <article style="padding: 0; background-color: #dedede; border-radius: 25px;">
+                                                    <p class="metrics-value" style="padding-top:0.3em;" id="dc1-minimum-voltage">
+                                                        25.0
+                                                    </p>
+                                                </article>
+                                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                                            </div>
+                                        </div>
+                                    </article>
+                                </div>
+                                <canvas id="dc1" x-init="
+                                        window.dc1_chart = new Chart($el, {
+                                            type: 'line',
+                                            data: {
+                                                labels: [],
+                                                datasets: [{
+                                                    label: 'DC1 Voltage',
+                                                    data: [],
+                                                    borderColor: '#e36916',
+                                                    backgroundColor: 'rgba(227, 105, 22, 0.2)',
+                                                    borderWidth: 2,
+                                                    tension: 0.1
+                                                },
+                                                {
+                                                    label: 'DC1 Average Voltage',
+                                                    data: [],
+                                                    borderColor: '#9abdd6',
+                                                    borderWidth: 2,
+                                                    tension: 0.2
+                                                }]
+                                            },
+                                            options: {
+                                                animation: {
+                                                    duration: 300
+                                                }
+                                            }
+                                        });
+                                    "></canvas>
+                                    <div role="group">
+                                        <label for="dc1-voltage-toggle">
+                                            <input type="checkbox" name="dc1-voltage-toggle" id="dc1-voltage-toggle" role="switch" checked>
+                                            Voltage
+                                        </label>
+                                        <label for="dc1-average-voltage-toggle">
+                                            <input type="checkbox" name="dc1-average-voltage-toggle" id="dc1-average-voltage-toggle" role="switch">
+                                            Avg. Voltage
+                                        </label>
+                                    </div>
+                            </article>
                         </div>
+                        
                     </div>
                     <div role="grid">
-                        <canvas id="batt" x-init="
-                            window.batt_chart = new Chart($el, {
-                                type: 'line',
-                                data: {
-                                    labels: [],
-                                    datasets: [{
-                                        label: 'Battery Voltage',
-                                        data: [],
-                                        borderColor: '#e36916',
-                                        backgroundColor: 'rgba(227, 105, 22, 0.2)',
-                                        borderWidth: 2
-                                    },
-                                    {
-                                        label: 'Battery Current',
-                                        data: [],
-                                        borderColor: '#163a55',
-                                        backgroundColor: 'rgba(22, 58, 85, 0.25)',
-                                        borderWidth: 2
-                                    },
-                                    {
-                                        label: 'Battery Power',
-                                        data: [],
-                                        borderColor: '#4A7C59',
-                                        backgroundColor: 'rgba(74, 124, 89, 0.25)',
-                                        borderWidth: 2
-                                    }
-                                    ]
-                                }
-                            });
-                        "></canvas>
+                        <div role="grid">
+                            <div style="position: relative; width: 100%;">
+                                <canvas id="batt" x-init="
+                                    window.batt_chart = new Chart($el, {
+                                        type: 'line',
+                                        data: {
+                                            labels: [],
+                                            datasets: [{
+                                                label: 'Battery Voltage',
+                                                data: [],
+                                                borderColor: '#e36916',
+                                                backgroundColor: 'rgba(227, 105, 22, 0.2)',
+                                                borderWidth: 2,
+                                                tension: 0.1
+                                            },
+                                            {
+                                                label: 'Battery Current',
+                                                data: [],
+                                                borderColor: '#163a55',
+                                                backgroundColor: 'rgba(22, 58, 85, 0.25)',
+                                                borderWidth: 2,
+                                                tension: 0.1
+                                            },
+                                            {
+                                                label: 'Battery Power',
+                                                data: [],
+                                                borderColor: '#4A7C59',
+                                                backgroundColor: 'rgba(74, 124, 89, 0.25)',
+                                                borderWidth: 2,
+                                                tension: 0.1
+                                            }
+                                            ]
+                                        },
+                                        options: {
+                                            animation: {
+                                                duration: 300
+                                            }
+                                        }
+                                    });
+                                "></canvas>
+                            </div>
+                            
+                            <article>
+                                Test
+                            </article>
+                        </div>
                         <div role="group">
                             <label for="batt-voltage-toggle">
                                 <input type="checkbox" name="batt-voltage-toggle" id="batt-voltage-toggle" role="switch" checked>
@@ -219,34 +309,6 @@
     </main>
 
     <script>
-        let dc1_voltage_toggle = document.getElementById("dc1-voltage-toggle");
-        dc1_voltage_toggle.addEventListener('change', () => {
-            if (dc1_voltage_toggle.checked) {
-                dc1_chart.setDatasetVisibility(0, true);
-            } else {
-                dc1_chart.setDatasetVisibility(0, false);
-            }
-            dc1_chart.update();
-        });
-        let dc1_current_toggle = document.getElementById("dc1-current-toggle");
-        dc1_current_toggle.addEventListener('change', () => {
-            if (dc1_current_toggle.checked) {
-                dc1_chart.setDatasetVisibility(1, true);
-            } else {
-                dc1_chart.setDatasetVisibility(1, false);
-            }
-            dc1_chart.update();
-        });
-        let dc1_power_toggle = document.getElementById("dc1-power-toggle");
-        dc1_power_toggle.addEventListener('change', () => {
-            if (dc1_power_toggle.checked) {
-                dc1_chart.setDatasetVisibility(2, true);
-            } else {
-                dc1_chart.setDatasetVisibility(2, false);
-            }
-            dc1_chart.update();
-        })
-
         let batt_voltage_toggle = document.getElementById("batt-voltage-toggle");
         batt_voltage_toggle.addEventListener('change', () => {
             if (batt_voltage_toggle.checked) {
@@ -275,24 +337,87 @@
             batt_chart.update();
         })
 
-        function add_data_to_chart(chart, voltage_val, current_val, power_val, timestamp) {
+        function update_current_dc1(value) {
+            let current_dc1_voltage = document.getElementById("dc1-current-voltage");
+            current_dc1_voltage.textContent = value.toFixed(1);
+            return;
+        }
+
+        function update_max_dc1(value) {
+            let dc1_voltage_max = document.getElementById("dc1-maximum-voltage");
+            if (value > parseFloat(dc1_voltage_max.textContent)) {
+                dc1_voltage_max.textContent = value.toFixed(1);
+            }
+            return;
+        }
+
+        function update_min_dc1(value) {
+            let dc1_voltage_max = document.getElementById("dc1-minimum-voltage");
+            if (value < parseFloat(dc1_voltage_max.textContent)) {
+                dc1_voltage_max.textContent = value.toFixed(1);
+            }
+            return;
+        }
+        let dc1_value_count = 0;
+        let dc1_average_voltage = 0;
+        function update_dc1_average(value) {
+            dc1_average_voltage = ((dc1_average_voltage * dc1_value_count) + value) / (dc1_value_count + 1);
+            dc1_value_count++;
+            let dc1_avg = document.getElementById("dc1-average-voltage");
+            dc1_avg.textContent = dc1_average_voltage.toFixed(1);
+
+            dc1_chart.data.datasets[1].data.push(dc1_average_voltage);
+        }
+
+        function add_voltage_data_to_chart(chart, voltage, timestamp) {
+            // Prevent duplicate entries
+            if (voltage === chart.data.datasets[0].data.at(-1) &&
+                timestamp === chart.data.labels.at(-1)
+            )
+            {
+                console.log("Duplicate voltage values.");
+                return;
+            }
+            
+
+
+            chart.data.labels.push(timestamp);
+            chart.data.datasets[0].data.push(voltage);
+
+            if (chart.data.labels.length > 50) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+                chart.data.datasets[1].data.shift();
+            }
+
+            if (chart === dc1_chart) {
+                update_current_dc1(voltage);
+                update_max_dc1(voltage);
+                update_min_dc1(voltage);
+                update_dc1_average(voltage);
+            }
+
+            chart.update();
+        }
+
+        function add_battery_data_to_chart(chart, voltage, current, power, timestamp) {
             // Guard clause prevents duplicate data entries 
             if (
-                (voltage_val === chart.data.datasets[0].data.at(-1)) &&
-                (current_val === chart.data.datasets[1].data.at(-1)) &&
-                (power_val === chart.data.datasets[2].data.at(-1)) &&
+                (voltage === chart.data.datasets[0].data.at(-1)) &&
+                (current === chart.data.datasets[1].data.at(-1)) &&
+                (power === chart.data.datasets[2].data.at(-1)) &&
                 (timestamp === chart.data.labels.at(-1))
             )
             {
-                console.log("Duplicate values");
+                console.log("Duplicate battery values");
                 return;
             }
             
             chart.data.labels.push(timestamp);
             
-            chart.data.datasets[0].data.push(voltage_val);
-            chart.data.datasets[1].data.push(current_val);
-            chart.data.datasets[2].data.push(power_val);
+            chart.data.datasets[0].data.push(voltage);
+            chart.data.datasets[1].data.push(current);
+            chart.data.datasets[2].data.push(power);
 
             if (chart.data.labels.length > 50) {
                 chart.data.labels.shift();
@@ -327,11 +452,9 @@
                             this.dc1metrics = await dc1response.json();
                         }
                         let time = this.dc1metrics[0].timestamp.substring(11,19);
-                        add_data_to_chart(
+                        add_voltage_data_to_chart(
                                 dc1_chart, 
                                 this.dc1metrics[0].voltage_value,
-                                this.dc1metrics[0].current_value,
-                                this.dc1metrics[0].power_value,
                                 time,
                             );
                     } catch (error) {
@@ -345,11 +468,11 @@
                             this.battmetrics = await battresponse.json();
                         }
                         let time = this.battmetrics[0].timestamp.substring(11,19);
-                        add_data_to_chart(
+                        add_battery_data_to_chart(
                                 batt_chart, 
                                 this.battmetrics[0].voltage_value,
                                 this.battmetrics[0].current_value,
-                                this.battmetrics[0].power_value,
+                                this.battmetrics[0].voltage_value * this.battmetrics[0].current_value,
                                 time,
                             );
                     } catch (error) {

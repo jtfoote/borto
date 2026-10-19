@@ -17,7 +17,7 @@ def get_latest_metric():
 def get_dc1():
     # Grab all values with location 2, i.e., in the dc1 output
     with Session(engine) as db:
-        statement = select(SystemMetric).where(SystemMetric.value_location == 2).order_by(desc(SystemMetric.id)).limit(50)
+        statement = select(SystemMetric).where(SystemMetric.value_location == 1).order_by(desc(SystemMetric.id)).limit(50)
         values = db.execute(statement).scalars().all()[::-1]
         return values
 
@@ -25,6 +25,6 @@ def get_dc1():
 def get_batt():
     # Grab all values with location 2, i.e., in the dc1 output
     with Session(engine) as db:
-        statement = select(SystemMetric).where(SystemMetric.value_location == 3).order_by(desc(SystemMetric.id)).limit(50)
+        statement = select(SystemMetric).where(SystemMetric.value_location == 2).order_by(desc(SystemMetric.id)).limit(50)
         values = db.execute(statement).scalars().all()[::-1]
         return values
