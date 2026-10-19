@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 from shared.models import engine, SystemMetric, init_db, VAL_TYPE, LOCATION, BORTO_STATUS
 import time
 import serial
-import time
 import random
 from math import sin
 

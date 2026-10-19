@@ -9,12 +9,13 @@ lcd = CharLCD(
     rows=2
 )
 
-try:
-    lcd.clear()
-    lcd.write_string("Hello MGMT-5078!")
-    lcd.cursor_pos = (1, 0)
-    lcd.write_string("From BBF Inc.")
-    time.sleep(10)
-finally:
-    lcd.clear()
-    lcd.close()
+def write_to_lcd(line1: str, line2: str) -> None:
+    try:
+        lcd.clear()
+        lcd.write_string("Hello MGMT-5078!")
+        lcd.cursor_pos = (1, 0)
+        lcd.write_string("From BBF Inc.")
+        time.sleep(10)
+    finally:
+        lcd.clear()
+        lcd.close()
