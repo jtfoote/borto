@@ -37,7 +37,8 @@ class STM32Comm:
             case 2: # Battery, Voltage and Current
                 voltage = random.gauss(25,0.6)
                 current = random.gauss(1, 0.05)
-                return f"ne2{voltage:06.3f}V{current:06.3f}A01See"
+                status = 1
+                return f"ne2{voltage:06.3f}V{current:06.3f}A{status:02}See"
             case 3: # DC2, Voltage only
                 voltage = random.gauss(39.6,0.3)
                 return f"ne3{voltage:06.3f}V01See"

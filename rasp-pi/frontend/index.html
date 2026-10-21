@@ -31,6 +31,13 @@
                 --pico-secondary-inverse: #ffffff;
 
                 --data-background-colour: #dedede;
+
+                --charging-background: #9abdd6;
+                --charging-outline: #9abdd6;
+                --discharging-background: #5ca976;
+                --discharging-outline: #5ca976;
+                --error-background: #d65b5b87;
+                --error-outline: #d65b5b;
             }
 
         [data-theme="dark"] {
@@ -51,6 +58,13 @@
                 --pico-secondary-inverse: #F5F5F5;
 
                 --data-background-colour: #3f3f3f;
+
+                --charging-background: #82b0d47c;
+                --charging-outline: #9abdd6;
+                --discharging-background: #69c287;
+                --discharging-outline: #5ca976;
+                --error-background: ##e06b6b;
+                --error-outline: #d65b5b;
             }
 
         .logos:hover {
@@ -70,6 +84,54 @@
             font-size: 1.5em;
             align-self: center;
             text-align: center;
+        }
+
+        .borto-charging {
+            outline: var(--charging-outline) 1px;
+        }
+
+        .borto-status-logo {
+            display: flex;
+
+        }
+
+        .charging-bar {
+            opacity: 0;
+            animation-duration: 2s;
+            animation-iteration-count: infinite;
+            animation-timing-function: steps(1); /* Snaps visibility cleanly */
+        }
+
+        .bar-1 { animation-name: charge-1; }
+        .bar-2 { animation-name: charge-2; }
+        .bar-3 { animation-name: charge-3; }
+        .bar-4 { animation-name: charge-4; }
+
+        /* Bar 1 appears at 0%, stays visible until 85%, then turns off */
+        @keyframes charge-1 {
+            0%, 85% { opacity: 1; }
+            86%, 100% { opacity: 0; }
+        }
+
+        /* Bar 2 appears at 25%, turns off at 85% */
+        @keyframes charge-2 {
+            0%, 24% { opacity: 0; }
+            25%, 85% { opacity: 1; }
+            86%, 100% { opacity: 0; }
+        }
+
+        /* Bar 3 appears at 50%, turns off at 85% */
+        @keyframes charge-3 {
+            0%, 49% { opacity: 0; }
+            50%, 85% { opacity: 1; }
+            86%, 100% { opacity: 0; }
+        }
+
+        /* Bar 4 appears at 75%, turns off at 85% */
+        @keyframes charge-4 {
+            0%, 74% { opacity: 0; }
+            75%, 85% { opacity: 1; }
+            86%, 100% { opacity: 0; }
         }
     </style>
     <!-- Load chart.js -->
@@ -116,11 +178,56 @@
                 <br>
                 <div>
                     <article>
-                        This is the dashboard!
                         <div role="grid">
-                            <div role="group">
-                                
-                            </div>
+                            <article x-show="battstatus == 0" style="background-color: var(--error-background);outline:solid var(--error-outline) thin;">
+                                <div role="group" class="borto-status" style="display:grid;grid-template-columns: 2fr 1fr;padding-top: 1em;">
+                                    <div class="borto-status-logo">
+                                        <img src="images/borto-logo-no-text.svg" alt="BORTO" style="height:2em;padding-right:0.5em;"  />
+                                        <h3 class="status-text">Status:</h3>
+                                    </div>
+                                    <div role="group">
+                                        <h2 id="borto-status" class="status-text" style="font-size: 3em;">ERROR</h2>
+                                    </div>
+                                </div>
+                            </article>
+                            <article x-show="battstatus == 1" style="background-color: var(--charging-background);outline:solid var(--charging-outline) thin;">
+                                <div role="group" class="borto-status" style="display:grid;grid-template-columns: 2fr 1fr;padding-top: 1em;">
+                                    <div class="borto-status-logo">
+                                        <img src="images/borto-logo-no-text.svg" alt="BORTO" style="height:2em;padding-right:0.5em;" />
+                                        <h3 class="status-text">Status:</h3>
+                                    </div>
+                                    <div role="group">
+                                        <h2 id="borto-status" class="status-text" style="font-size: 3em;">CHARGING</h2>
+                                        <svg width="41" height="75" xmlns="http://www.w3.org/2000/svg">
+                                            <rect x="3" y="6" width="35" height="65" rx="6" stroke="#dc6b0d" stroke-width="5" fill="none"/>
+                                            <rect x="14" y="2" width="13" height="3" rx="5" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                                            <rect class="charging-bar bar-4" x="11.4" y="16" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                                            <rect class="charging-bar bar-3" x="11.4" y="29" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                                            <rect class="charging-bar bar-2" x="11.4" y="43" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                                            <rect class="charging-bar bar-1" x="11.4" y="57" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </article>
+                            <article x-show="battstatus == 2" style="background-color: var(--discharging-background);outline:solid var(--discharging-outline) thin;">
+                                <div role="group" class="borto-status" style="display:grid;grid-template-columns: 2fr 1fr;padding-top: 1em;">
+                                    <div class="borto-status-logo">
+                                        <img src="images/borto-logo-no-text.svg" alt="BORTO" style="height:2em;padding-right:0.5em;" />
+                                        <h3 class="status-text">Status:</h3>
+                                    </div>
+                                    <div role="group">
+                                        <h2 id="borto-status" class="status-text" style="font-size: 3em;">DISCHARGING</h2>
+                                        <svg width="41" height="75" xmlns="http://www.w3.org/2000/svg">
+                                            <rect x="3" y="6" width="35" height="65" rx="6" stroke="#dc6b0d" stroke-width="5" fill="none"/>
+                                            <rect x="14" y="2" width="13" height="3" rx="5" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                                            <rect class="charging-bar bar-4" x="11.4" y="16" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                                            <rect class="charging-bar bar-3" x="11.4" y="29" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                                            <rect class="charging-bar bar-2" x="11.4" y="43" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                                            <rect class="charging-bar bar-1" x="11.4" y="57" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </article>
                             <div role="group">
 
                             </div>
@@ -148,7 +255,7 @@
                                         <div style="display:grid; grid-template-columns: 1fr 2fr;">
                                             <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
                                                 <p class="metrics-value" style="padding-top:0.5em;" id="dc1-average-voltage">
-                                                    25.0
+                                                    --
                                                 </p>
                                             </article>
                                             <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
@@ -161,7 +268,7 @@
                                         <div style="display:grid; grid-template-columns: 1fr 2fr;">
                                             <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
                                                 <p class="metrics-value" style="padding-top:0.5em;" id="dc1-current-voltage">
-                                                    25.0
+                                                    --
                                                 </p>
                                             </article>
                                             <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
@@ -174,7 +281,7 @@
                                         <div style="display:grid; grid-template-columns: 1fr 2fr;">
                                             <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
                                                 <p class="metrics-value" style="padding-top:0.5em;" id="dc1-maximum-voltage">
-                                                    25.0
+                                                    0
                                                 </p>
                                             </article>
                                             <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
@@ -187,7 +294,7 @@
                                         <div style="display:grid; grid-template-columns: 1fr 2fr;">
                                             <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
                                                 <p class="metrics-value" style="padding-top:0.5em;" id="dc1-minimum-voltage">
-                                                    25.0
+                                                    0
                                                 </p>
                                             </article>
                                             <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
@@ -247,13 +354,13 @@
                                         <div style="display:grid; grid-template-columns: 1fr 2fr;">
                                             <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
                                                 <p class="metrics-value" style="padding-top:0.5em;" id="batt-average-voltage">
-                                                    25.0
+                                                    --
                                                 </p>
                                             </article>
                                             <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
                                             <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
                                                 <p class="metrics-value" style="padding-top:0.5em;" id="batt-average-current">
-                                                    25.0
+                                                    --
                                                 </p>
                                             </article>
                                             <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">A</p>
@@ -266,13 +373,13 @@
                                         <div style="display:grid; grid-template-columns: 1fr 2fr;">
                                             <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
                                                 <p class="metrics-value" style="padding-top:0.5em;" id="batt-current-voltage">
-                                                    25.0
+                                                    --
                                                 </p>
                                             </article>
                                             <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
                                             <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
                                                 <p class="metrics-value" style="padding-top:0.5em;" id="batt-current-current">
-                                                    25.0
+                                                    --
                                                 </p>
                                             </article>
                                             <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">A</p>
@@ -285,7 +392,7 @@
                                         <div style="display:grid; grid-template-columns: 1fr 2fr;">
                                             <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
                                                 <p class="metrics-value" style="padding-top:0.5em;" id="batt-maximum-voltage">
-                                                    25.0
+                                                    --
                                                 </p>
                                             </article>
                                             <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
@@ -298,7 +405,7 @@
                                         <div style="display:grid; grid-template-columns: 1fr 2fr;">
                                             <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
                                                 <p class="metrics-value" style="padding-top:0.5em;" id="batt-minimum-voltage">
-                                                    25.0
+                                                    --
                                                 </p>
                                             </article>
                                             <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
@@ -373,9 +480,22 @@
             <input type="checkbox" name="theme-toggle" id="theme-toggle" role="switch">
             Dark Mode
         </label>
+        <hr>
+        <div role="group">
+            <label for="status-override">
+                <input type="checkbox" name="status-override" id="status-override" role="switch" x-model="manual_status_override" unchecked>
+                Status Manual Override
+            </label>
+            <label for="status">
+                <input type="number" name="status" id="status" x-model.number="battstatus">
+                Status Code
+            </label>
+        </div>
+
     </main>
 
     <script>
+
         let dc1_voltage_toggle = document.getElementById("dc1-voltage-toggle");
         dc1_voltage_toggle.addEventListener('change', () => {
             if (dc1_voltage_toggle.checked) {
@@ -541,9 +661,10 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('bortoMonitor', () => ({
                 activeTab: 'dashboard',
-                telemetry: {},
                 dc1metrics: {},
                 battmetrics: {},
+                battstatus: 0,
+                manual_status_override: false,
                 startPolling() {
                     this.getDC1Metrics();
                     setInterval(() => {
@@ -575,6 +696,10 @@
                         const battresponse = await fetch('/api/metrics/batt');
                         if (battresponse.ok) {
                             this.battmetrics = await battresponse.json();
+                        }
+                        if (!this.manual_status_override) {
+                            this.battstatus = this.battmetrics[0].status;
+                            // console.log(this.battstatus);
                         }
                         let time = this.battmetrics[0].timestamp.substring(11,19);
                         add_battery_data_to_chart(
