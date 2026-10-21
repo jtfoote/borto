@@ -24,7 +24,7 @@ def main():
                     message = stm32.read_message()
                 except Exception as e:
                     print(e, flush=True)
-            print(message, flush=True)
+            # print(message, flush=True)
             db_entry, status = stm32.parse_message(message)
             db.add(db_entry)
             db.commit()

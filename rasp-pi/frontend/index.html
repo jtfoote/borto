@@ -134,13 +134,41 @@
             86%, 100% { opacity: 0; }
         }
     </style>
+    <script src="app.js" defer></script>
     <!-- Load chart.js -->
      <script src="chart.umd.js"></script>
     <!-- Load Alpine.js -->
     <script defer src="alpine.min.js"></script>
 </head>
 <body x-data="bortoMonitor()" x-init="startPolling()">
-    <main class="container">
+    <main class="container" x-show="!connected" x-data="wifiManager()">
+        <article style="background-color: var(--pico-primary-focus);" class="main-banner" role="grid">
+            <a href="#" @click.prevent="activeTab = 'dashboard'" style="justify-self: start; text-decoration: none;">
+                <img
+                    class="logos" 
+                    src="images/borto-logo.svg" 
+                    style="height:7em;" 
+                />
+            </a>
+            <div>
+                <a href="https://github.com/jtfoote/borto" target="_blank" style="padding: 1em; text-decoration: none;">
+                    <img class="logos" src="images/ghlogo.svg" alt="Github Logo" style="height:2em;"/>
+                </a>
+                <a href="https://sites.google.com/view/theborto" target="_blank" style="text-decoration: none;">
+                    <img class="logos" src="images/logo.svg" alt="BBF Logo" style="height:2em;" />
+                </a>
+            </div>
+        </article>
+        <article role="grid">
+            <h2>Connect to a Wifi Network</h2>
+            <input type="text" x-model="ssid" placeholder="Network Name">
+            <input type="password" x-model="password" placeholder="Password">
+
+            <button @click="connectToWifi" x-text="connecting ? 'Connecting...' : 'Connect'" :disabled="connecting || !ssid">
+            </button>
+        </article>
+    </main>
+    <main class="container" x-show="connected">
         <!-- Header -->
         <article style="background-color: var(--pico-primary-focus);" class="main-banner" role="grid">
             <a href="#" @click.prevent="activeTab = 'dashboard'" style="justify-self: start; text-decoration: none;">
@@ -254,8 +282,7 @@
                                         <header><h3>Average</h3></header>
                                         <div style="display:grid; grid-template-columns: 1fr 2fr;">
                                             <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
-                                                <p class="metrics-value" style="padding-top:0.5em;" id="dc1-average-voltage">
-                                                    --
+                                                <p class="metrics-value" style="padding-top:0.5em;" x-text="dc1_average_voltage">
                                                 </p>
                                             </article>
                                             <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
@@ -267,8 +294,7 @@
                                         <header><h3>Current</h3></header>
                                         <div style="display:grid; grid-template-columns: 1fr 2fr;">
                                             <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
-                                                <p class="metrics-value" style="padding-top:0.5em;" id="dc1-current-voltage">
-                                                    --
+                                                <p class="metrics-value" style="padding-top:0.5em;" x-text="dc1_current_voltage">
                                                 </p>
                                             </article>
                                             <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
@@ -280,8 +306,7 @@
                                         <header><h3>Maximum</h3></header>
                                         <div style="display:grid; grid-template-columns: 1fr 2fr;">
                                             <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
-                                                <p class="metrics-value" style="padding-top:0.5em;" id="dc1-maximum-voltage">
-                                                    0
+                                                <p class="metrics-value" style="padding-top:0.5em;" x-text="dc1_max_voltage">
                                                 </p>
                                             </article>
                                             <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
@@ -293,8 +318,7 @@
                                         <header><h3>Minimum</h3></header>
                                         <div style="display:grid; grid-template-columns: 1fr 2fr;">
                                             <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
-                                                <p class="metrics-value" style="padding-top:0.5em;" id="dc1-minimum-voltage">
-                                                    0
+                                                <p class="metrics-value" style="padding-top:0.5em;" x-text="dc1_min_voltage">
                                                 </p>
                                             </article>
                                             <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
@@ -495,227 +519,6 @@
     </main>
 
     <script>
-
-        let dc1_voltage_toggle = document.getElementById("dc1-voltage-toggle");
-        dc1_voltage_toggle.addEventListener('change', () => {
-            if (dc1_voltage_toggle.checked) {
-                dc1_chart.setDatasetVisibility(0, true);
-            } else {
-                dc1_chart.setDatasetVisibility(0, false);
-            }
-            dc1_chart.update();
-        })
-
-        let dc1_average_voltage_toggle = document.getElementById("dc1-average-voltage-toggle");
-        dc1_average_voltage_toggle.addEventListener('change', () => {
-            if (dc1_average_voltage_toggle.checked) {
-                dc1_chart.setDatasetVisibility(1, true);
-            } else {
-                dc1_chart.setDatasetVisibility(1, false);
-            }
-            dc1_chart.update();
-        })
-
-        let batt_voltage_toggle = document.getElementById("batt-voltage-toggle");
-        batt_voltage_toggle.addEventListener('change', () => {
-            if (batt_voltage_toggle.checked) {
-                batt_chart.setDatasetVisibility(0, true);
-            } else {
-                batt_chart.setDatasetVisibility(0, false);
-            }
-            batt_chart.update();
-        });
-        let batt_current_toggle = document.getElementById("batt-current-toggle");
-        batt_current_toggle.addEventListener('change', () => {
-            if (batt_current_toggle.checked) {
-                batt_chart.setDatasetVisibility(1, true);
-            } else {
-                batt_chart.setDatasetVisibility(1, false);
-            }
-            batt_chart.update();
-        });
-        let batt_power_toggle = document.getElementById("batt-power-toggle");
-        batt_power_toggle.addEventListener('change', () => {
-            if (batt_power_toggle.checked) {
-                batt_chart.setDatasetVisibility(2, true);
-            } else {
-                batt_chart.setDatasetVisibility(2, false);
-            }
-            batt_chart.update();
-        })
-
-        function update_current_dc1(value) {
-            let current_dc1_voltage = document.getElementById("dc1-current-voltage");
-            current_dc1_voltage.textContent = value.toFixed(1);
-            return;
-        }
-
-        function update_max_dc1(value) {
-            let dc1_voltage_max = document.getElementById("dc1-maximum-voltage");
-            if (value > parseFloat(dc1_voltage_max.textContent)) {
-                dc1_voltage_max.textContent = value.toFixed(1);
-            }
-            return;
-        }
-
-        function update_min_dc1(value) {
-            let dc1_voltage_max = document.getElementById("dc1-minimum-voltage");
-            if (value < parseFloat(dc1_voltage_max.textContent)) {
-                dc1_voltage_max.textContent = value.toFixed(1);
-            }
-            return;
-        }
-        let dc1_value_count = 0;
-        let dc1_average_voltage = 0;
-        function update_dc1_average(value) {
-            dc1_average_voltage = ((dc1_average_voltage * dc1_value_count) + value) / (dc1_value_count + 1);
-            dc1_value_count++;
-            let dc1_avg = document.getElementById("dc1-average-voltage");
-            dc1_avg.textContent = dc1_average_voltage.toFixed(1);
-
-            dc1_chart.data.datasets[1].data.push(dc1_average_voltage);
-        }
-
-        function add_voltage_data_to_chart(chart, voltage, timestamp) {
-            // Prevent duplicate entries
-            if (voltage === chart.data.datasets[0].data.at(-1) &&
-                timestamp === chart.data.labels.at(-1)
-            )
-            {
-                console.log("Duplicate voltage values.");
-                return;
-            }
-            
-            chart.data.labels.push(timestamp);
-            chart.data.datasets[0].data.push(voltage);
-
-            if (chart.data.labels.length > 50) {
-                chart.data.labels.shift();
-                chart.data.datasets[0].data.shift();
-                chart.data.datasets[1].data.shift();
-            }
-
-            if (chart === dc1_chart) {
-                update_current_dc1(voltage);
-                update_max_dc1(voltage);
-                update_min_dc1(voltage);
-                update_dc1_average(voltage);
-            }
-            chart.update();
-        }
-
-        function update_current_batt_values(voltage, current) {
-            let current_batt_voltage = document.getElementById("batt-current-voltage");
-            current_batt_voltage.textContent = voltage.toFixed(1);
-            let current_batt_current = document.getElementById("batt-current-current");
-            current_batt_current.textContent = current.toFixed(1);
-        }
-
-        let batt_value_count = 0;
-        let batt_average_voltage = 0;
-        let batt_average_current = 0;
-        function update_batt_average(voltage, current) {
-            batt_average_voltage = ((batt_average_voltage * batt_value_count) + voltage) / (batt_value_count + 1);
-            batt_average_current = ((batt_average_current * batt_value_count) + current) / (batt_value_count + 1);
-            batt_value_count++;
-            let batt_avg_voltage = document.getElementById("batt-average-voltage");
-            let batt_avg_current = document.getElementById("batt-average-current");
-            batt_avg_voltage.textContent = batt_average_voltage.toFixed(1);
-            batt_avg_current.textContent = batt_average_current.toFixed(1);
-
-            // dc1_chart.data.datasets[1].data.push(dc1_average_voltage);
-        }
-
-        function add_battery_data_to_chart(chart, voltage, current, power, timestamp) {
-            // Guard clause prevents duplicate data entries 
-            if (
-                (voltage === chart.data.datasets[0].data.at(-1)) &&
-                (current === chart.data.datasets[1].data.at(-1)) &&
-                (power === chart.data.datasets[2].data.at(-1)) &&
-                (timestamp === chart.data.labels.at(-1))
-            )
-            {
-                console.log("Duplicate battery values");
-                return;
-            }
-            
-            chart.data.labels.push(timestamp);
-            
-            chart.data.datasets[0].data.push(voltage);
-            chart.data.datasets[1].data.push(current);
-            chart.data.datasets[2].data.push(power);
-
-            if (chart.data.labels.length > 50) {
-                chart.data.labels.shift();
-                chart.data.datasets[0].data.shift();
-                chart.data.datasets[1].data.shift();
-                chart.data.datasets[2].data.shift();
-            }
-
-            update_current_batt_values(voltage, current);
-            update_batt_average(voltage, current);
-
-            chart.update();
-        }
-
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('bortoMonitor', () => ({
-                activeTab: 'dashboard',
-                dc1metrics: {},
-                battmetrics: {},
-                battstatus: 0,
-                manual_status_override: false,
-                startPolling() {
-                    this.getDC1Metrics();
-                    setInterval(() => {
-                        this.getDC1Metrics();
-                    }, 500); 
-                    this.getBattMetrics();
-                    setInterval(() => {
-                        this.getBattMetrics();
-                    }, 500);
-                },
-                async getDC1Metrics () {
-                    try {
-                        const dc1response = await fetch('/api/metrics/dc1');
-                        if (dc1response.ok) {
-                            this.dc1metrics = await dc1response.json();
-                        }
-                        let time = this.dc1metrics[0].timestamp.substring(11,19);
-                        add_voltage_data_to_chart(
-                                dc1_chart, 
-                                this.dc1metrics[0].voltage_value,
-                                time,
-                            );
-                    } catch (error) {
-                        console.error('DC1 Metrics could not be read:', error);
-                    }
-                },
-                async getBattMetrics () {
-                    try {
-                        const battresponse = await fetch('/api/metrics/batt');
-                        if (battresponse.ok) {
-                            this.battmetrics = await battresponse.json();
-                        }
-                        if (!this.manual_status_override) {
-                            this.battstatus = this.battmetrics[0].status;
-                            // console.log(this.battstatus);
-                        }
-                        let time = this.battmetrics[0].timestamp.substring(11,19);
-                        add_battery_data_to_chart(
-                                batt_chart, 
-                                this.battmetrics[0].voltage_value,
-                                this.battmetrics[0].current_value,
-                                this.battmetrics[0].voltage_value * this.battmetrics[0].current_value,
-                                time,
-                            );
-                    } catch (error) {
-                        console.error('Battery Metrics could not be read:', error);
-                    }
-                },
-            }))
-        });
-
         const toggle = document.getElementById('theme-toggle');
         const html = document.documentElement;
 
