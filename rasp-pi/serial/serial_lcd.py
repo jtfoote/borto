@@ -11,20 +11,30 @@ lcd = CharLCD(
     cols=16,
     rows=2
 )
-button = Button(17)
+rightButton = Button(17, pull_up=True)
+leftButton = Button(27, pull_up=True)
 
-pages = [("Welcome User!", "Right Button: >"), ("Page 2", "Button Works")]
+menuIndex = 0
+totalMenuCount = 4
+menu[("Page 1", "Home"), ("Page 2, Turtle"), ("Page 3", "Pig"), ("Page 4", "Snake")]
 
-pages_index = 0;
+rightButton.when_pressed = next_menu
+leftButton.when_pressed = previous_menu
+
+def nextMenu():
+    global menuIndex
+    menu = (menuIndex + 1) % totalMenuCount
+    update_lcd()
+
+def previousMenu():
+    global menuIndex
+    menu = (menuIndex - 1) % totalMenuCount
+    update_lcd()
 
 def update_lcd():
     lcd.clear()
     lcd.cursor_pos = (0, 0)
-    lcd.write_string(pages[page_index][0])
+    lcd.write_string(menu[menuIndex][0][:16])
     lcd.cursor_pos = (1, 0)
-    lcd.write_string(pages[page_index][1])
+    lcd.write_string(menu[menuIndex][1][:16])
 
-def next_page():
-    global page_index
-    page_index = (page_index + 1) % len(pages)
-    update_lcd()
