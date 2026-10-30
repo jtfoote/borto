@@ -4,3 +4,4 @@ RPLCD
 smbus2
 luma.oled
 gpiozero
+lgpio
