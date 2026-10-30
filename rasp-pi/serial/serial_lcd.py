@@ -15,8 +15,13 @@ rightButton = Button(17, pull_up=True, bounce_time=0.05)
 leftButton = Button(27, pull_up=True, bounce_time=0.05)
 
 menuIndex = 0
+
+menu = [("Page 1", "Home"), 
+        ("Page 2", "Turtle"), 
+        ("Page 3", "Pig"), 
+        ("Page 4", "Snake")
+        ]
 totalMenuCount = len(menu)
-menu = [("Page 1", "Home"), ("Page 2, Turtle"), ("Page 3", "Pig"), ("Page 4", "Snake")]\
 
 def nextMenu():
     global menuIndex
@@ -43,7 +48,7 @@ update_lcd()
 
 try:
     pause()
-    
+
 finally:
     lcd.clear()
     lcd.close()
