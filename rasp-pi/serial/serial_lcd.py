@@ -18,8 +18,9 @@ menuIndex = 0
 totalMenuCount = 4
 menu[("Page 1", "Home"), ("Page 2, Turtle"), ("Page 3", "Pig"), ("Page 4", "Snake")]
 
-rightButton.when_pressed = next_menu
-leftButton.when_pressed = previous_menu
+rightButton.when_pressed = nextMenu
+leftButton.when_pressed = previousMenu
+update_lcd
 
 def nextMenu():
     global menuIndex
