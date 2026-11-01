@@ -17,8 +17,8 @@
 // - Minimum D (5%): Prevents near-zero energy transfer.
 // - Maximum D (85%): Limits maximum theoretical boost ratio (Vout = Vin / (1 - D))
 //   to prevent extreme inductor saturation, output over-voltage, and driver UVLO.
-#define BOOST_MIN_DUTY_PCT   5.0f   // 5.0% minimum duty cycle
-#define BOOST_MAX_DUTY_PCT   85.0f  // 85.0% maximum duty cycle
+#define BOOST_MIN_DUTY_PCT   10.0f   // 5.0% minimum duty cycle
+#define BOOST_MAX_DUTY_PCT   35.0f  // 85.0% maximum duty cycle
 
 /* ============================================================================
  * Function Prototypes
@@ -55,6 +55,8 @@ void Boost_SetDutyCycle(float duty_percent);
  */
 void Boost_SetRawCompare(uint16_t compare_val);
 
+void Boost_PI_Init(void);
 
+void Boost_Control_Task(void);
 
 #endif /* INC_BOOST_CONVERTER_H_ */

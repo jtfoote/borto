@@ -20,7 +20,8 @@
 
 // Quarter-wave sine lookup table size (90 degrees = 85 samples)
 #define QUARTER_SAMPLES         85
-#define HALF_CYCLE_STEPS        (QUARTER_SAMPLES * 2) // 170 steps for 180 degrees
+#define ACTIVE_STEPS			169
+#define HALF_CYCLE_STEPS        (ACTIVE_STEPS + 1) // 170 steps for 180 degrees
 
 /* ============================================================================
  * Function Prototypes

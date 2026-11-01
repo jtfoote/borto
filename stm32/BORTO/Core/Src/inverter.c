@@ -23,17 +23,17 @@ static TIM_HandleTypeDef *inverter_htim = NULL;
 static volatile uint16_t sample_index = 0;
 static volatile InverterState_t inv_state = STATE_POSITIVE_HALF;
 
-// 85-element Quarter-Wave Lookup Table (Scaled to ARR = 4166)
+// 85-element Non-Zero Quarter-Wave Lookup Table (Scaled to ARR = 4166)
 static const uint16_t sine_table_quarter[QUARTER_SAMPLES] = {
-    0, 77, 154, 231, 307, 384, 461, 537, 614, 690,
-    765, 841, 916, 991, 1066, 1140, 1214, 1287, 1360, 1433,
-    1505, 1576, 1647, 1718, 1788, 1857, 1926, 1994, 2061, 2127,
-    2193, 2258, 2323, 2386, 2449, 2511, 2572, 2632, 2691, 2749,
-    2807, 2863, 2919, 2973, 3027, 3079, 3130, 3181, 3230, 3278,
-    3325, 3371, 3415, 3459, 3501, 3542, 3582, 3621, 3658, 3695,
-    3730, 3763, 3796, 3827, 3857, 3885, 3912, 3938, 3962, 3986,
-    4007, 4028, 4047, 4064, 4081, 4095, 4109, 4121, 4132, 4141,
-    4149, 4155, 4160, 4164, 4166
+      77,  154,  231,  307,  384,  461,  537,  614,  690,  765,
+     841,  916,  991, 1066, 1140, 1214, 1287, 1360, 1433, 1505,
+    1576, 1647, 1718, 1788, 1857, 1926, 1994, 2061, 2127, 2193,
+    2258, 2323, 2386, 2449, 2511, 2572, 2632, 2691, 2749, 2807,
+    2863, 2919, 2973, 3027, 3079, 3130, 3181, 3230, 3278, 3325,
+    3371, 3415, 3459, 3501, 3542, 3582, 3621, 3658, 3695, 3730,
+    3763, 3796, 3827, 3857, 3885, 3912, 3938, 3962, 3986, 4007,
+    4028, 4047, 4064, 4081, 4095, 4109, 4121, 4132, 4141, 4149,
+    4155, 4160, 4164, 4165, 4166
 };
 
 /* ============================================================================
@@ -47,7 +47,7 @@ static uint16_t get_sine_duty(uint16_t step) {
         return sine_table_quarter[step];
     } else {
         // Ramp DOWN: Read backward (84 down to 0)
-        return sine_table_quarter[(HALF_CYCLE_STEPS - 1) - step];
+        return sine_table_quarter[(ACTIVE_STEPS - 1) - step];
     }
 }
 
@@ -113,7 +113,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
                 __HAL_TIM_SET_COMPARE(inverter_htim, TIM_CHANNEL_4, INVERTER_TIMER_ARR + 1);
 
                 sample_index++;
-                if (sample_index >= HALF_CYCLE_STEPS) {
+                if (sample_index >= ACTIVE_STEPS) {
                     sample_index = 0;
                     inv_state = STATE_DEADTIME_POS_TO_NEG;
                 }
@@ -140,7 +140,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
                 __HAL_TIM_SET_COMPARE(inverter_htim, TIM_CHANNEL_4, 0);
 
                 sample_index++;
-                if (sample_index >= HALF_CYCLE_STEPS) {
+                if (sample_index >= ACTIVE_STEPS) {
                     sample_index = 0;
                     inv_state = STATE_DEADTIME_NEG_TO_POS;
                 }
