@@ -2,6 +2,7 @@
 document.addEventListener('alpine:init', () => {
     Alpine.data('bortoMonitor', () => ({
         connected: false,
+        current_ssid: '',
         connectionstatus: {},
         activeTab: 'dashboard',
         dc1metrics: {},
@@ -12,6 +13,54 @@ document.addEventListener('alpine:init', () => {
         dc1_min_voltage: 0,
         battmetrics: {},
         battstatus: 0,
+
+        savingSettings: false,
+        settingsMsg: '',
+        settingsErr: false,
+
+        settings: {
+            deviceName: 'BORTO2026',
+            operatingMode: 'auto_tou',
+            tou: {
+                preset: 'winter',
+                offPeakStart: '19:00',
+                offPeakEnd: '07:00',
+                onPeak1Start: '07:00',
+                onPeak1End: '11:00',
+                onPeak2Start: '17:00',
+                onPeak2End: '19:00',
+                reserveSoc: 50,
+                weekendsOffPeak: true
+            }
+        },
+
+        powerModal: {
+            open: false,
+            action: '',
+            title: '',
+            message: ''
+        },
+
+        loadingDebug: false,
+
+        debug: {
+            enabled: false,
+            dc1_setpoint: 0.0,
+            dc2_setpoint: 0.0,
+            dc1_duty_cycle: 0.0, // Updated via polling or loadDebugParams()
+            dc2_duty_cycle: 0.0, // Updated via polling or loadDebugParams()
+            cal: {
+                dc1_v_slope: 1.0,
+                dc1_v_offset: 0.0,
+                dc1_i_slope: 1.0,
+                dc1_i_offset: 0.0,
+                dc2_v_slope: 1.0,
+                dc2_v_offset: 0.0,
+                temp_slope: 1.0,
+                temp_offset: 0.0,
+            }
+        },
+
         manual_status_override: false,
         startPolling() {
             this.getDC1Metrics();
@@ -119,12 +168,179 @@ document.addEventListener('alpine:init', () => {
                     this.connectionstatus = await networkStatus.json();
                 }
                 this.connected = this.connectionstatus.connected;
+                this.current_ssid = this.connectionstatus.ssid;
                 console.log(this.connectionstatus);
 
             } catch (error) {
                 console.error('Network status chould not be verified.', error);
             }
-        }
+        },
+        notifySettings(msg, isErr = false) {
+            this.settingsMsg = msg;
+            this.settingsErr = isErr;
+            setTimeout(() => { this.settingsMsg = ''; }, 5000);
+        },
+
+        applyTouPreset() {
+            const p = this.settings.tou.preset;
+            if (p === 'winter') {
+                Object.assign(this.settings.tou, {
+                    offPeakStart: '19:00', offPeakEnd: '07:00',
+                    onPeak1Start: '07:00', onPeak1End: '11:00',
+                    onPeak2Start: '17:00', onPeak2End: '19:00'
+                });
+            } else if (p === 'summer') {
+                Object.assign(this.settings.tou, {
+                    offPeakStart: '19:00', offPeakEnd: '07:00',
+                    onPeak1Start: '11:00', onPeak1End: '17:00',
+                    onPeak2Start: '', onPeak2End: ''
+                });
+            } else if (p === 'ulo') {
+                Object.assign(this.settings.tou, {
+                    offPeakStart: '23:00', offPeakEnd: '07:00',
+                    onPeak1Start: '16:00', onPeak1End: '21:00',
+                    onPeak2Start: '', onPeak2End: ''
+                });
+            }
+        },
+
+        async saveGeneralSettings() {
+            this.savingSettings = true;
+            try {
+                const res = await fetch('/api/settings/general', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        device_name: this.settings.deviceName,
+                        operating_mode: this.settings.operatingMode
+                    })
+                });
+                if (!res.ok) throw new Error('Failed to save device settings');
+                this.notifySettings('Device settings updated.');
+            } catch (err) {
+                this.notifySettings(err.message, true);
+            } finally {
+                this.savingSettings = false;
+            }
+        },
+
+        async saveTouSettings() {
+            this.savingSettings = true;
+            try {
+                const res = await fetch('/api/settings/tou', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.settings.tou)
+                });
+                if (!res.ok) throw new Error('Failed to save TOU schedule');
+                this.notifySettings('Time of Use schedule saved.');
+            } catch (err) {
+                this.notifySettings(err.message, true);
+            } finally {
+                this.savingSettings = false;
+            }
+        },
+
+        async syncBrowserTime() {
+            try {
+                const res = await fetch('/api/settings/time', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ iso_time: new Date().toISOString() })
+                });
+                if (!res.ok) throw new Error('Failed to sync system time');
+                this.notifySettings('System time synced with browser.');
+            } catch (err) {
+                this.notifySettings(err.message, true);
+            }
+        },
+
+        confirmPower(action) {
+            this.powerModal.action = action;
+            this.powerModal.title = action === 'reboot' ? 'Reboot BORTO2026?' : 'Shut Down BORTO2026?';
+            this.powerModal.message = action === 'reboot'
+                ? 'The Raspberry Pi will restart and the dashboard will reconnect in ~45 seconds.'
+                : 'The Raspberry Pi will halt. You will need to physically toggle power to turn it back on.';
+            this.powerModal.open = true;
+        },
+
+        async executePowerAction() {
+            this.savingSettings = true;
+            try {
+                const res = await fetch(`/api/system/${this.powerModal.action}`, { method: 'POST' });
+                if (!res.ok) throw new Error(`Failed to initiate ${this.powerModal.action}`);
+                this.powerModal.open = false;
+                this.notifySettings(`System ${this.powerModal.action} initiated...`);
+            } catch (err) {
+                this.notifySettings(err.message, true);
+            } finally {
+                this.savingSettings = false;
+            }
+        },
+
+        async loadDebugParams() {
+            this.loadingDebug = true;
+            try {
+                const res = await fetch('/api/debug/params');
+                if (!res.ok) throw new Error('Failed to read debug parameters from MCU');
+                const data = await res.json();
+
+                this.debug.dc1_setpoint = data.dc1_setpoint ?? this.debug.dc1_setpoint;
+                this.debug.dc2_setpoint = data.dc2_setpoint ?? this.debug.dc2_setpoint;
+                this.debug.dc1_duty_cycle = data.dc1_duty_cycle ?? this.debug.dc1_duty_cycle;
+                this.debug.dc2_duty_cycle = data.dc2_duty_cycle ?? this.debug.dc2_duty_cycle;
+
+                if (data.cal) {
+                    Object.assign(this.debug.cal, data.cal);
+                }
+                this.notifySettings('Debug parameters loaded from controller.');
+            } catch (err) {
+                this.notifySettings(err.message, true);
+            } finally {
+                this.loadingDebug = false;
+            }
+        },
+
+        // WRITE DC1 & DC2 setpoints to backend
+        async saveDebugSetpoints() {
+            if (!this.debug.enabled) return;
+            this.savingSettings = true;
+            try {
+                const res = await fetch('/api/debug/setpoints', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        dc1_setpoint: this.debug.dc1_setpoint,
+                        dc2_setpoint: this.debug.dc2_setpoint
+                    })
+                });
+                if (!res.ok) throw new Error('Failed to write DC1/DC2 setpoints');
+                this.notifySettings('DC1 & DC2 setpoints updated.');
+            } catch (err) {
+                this.notifySettings(err.message, true);
+            } finally {
+                this.savingSettings = false;
+            }
+        },
+
+        // WRITE DC1 (V/I) & DC2 (V) calibration slopes and offsets to backend
+        async saveSensorCalibration() {
+            if (!this.debug.enabled) return;
+            this.savingSettings = true;
+            try {
+                const res = await fetch('/api/debug/calibration', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.debug.cal)
+                });
+                if (!res.ok) throw new Error('Failed to write sensor calibration');
+                this.notifySettings('Sensor calibration slopes and offsets updated.');
+            } catch (err) {
+                this.notifySettings(err.message, true);
+            } finally {
+                this.savingSettings = false;
+            }
+        },
     }));
 
     Alpine.data('wifiManager', () => ({

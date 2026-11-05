@@ -497,24 +497,327 @@
                     
                 </article>
             </section>
-            <section x-show="activeTab === 'settings'"> <!-- Settings UI --> </section>
+            <section 
+                x-show="activeTab === 'settings'"
+                x-transition.delay.100ms 
+                x-transition:enter.duration.250ms
+                x-transition:leave.duration.50ms
+            >
+                <br>
+                <!-- Status Feedback Banner -->
+                <article x-show="settingsMsg" x-transition :style="settingsErr ? 'background-color: var(--error-background); outline: solid var(--error-outline) thin;' : 'background-color: var(--charging-background); outline: solid var(--charging-outline) thin;'">
+                    <p style="margin-bottom: 0; font-weight: bold;" x-text="settingsMsg"></p>
+                </article>
+
+                <article>
+                    <!-- 1. DEVICE IDENTITY & OPERATING MODE -->
+                    <div role="grid">
+                        <details name="settings-group" open>
+                            <summary role="button">Device & Operating Mode</summary>
+                            <form @submit.prevent="saveGeneralSettings">
+                                <div class="grid">
+                                    <label for="device-name">
+                                        Device Name / Hostname
+                                        <input type="text" id="device-name" x-model="settings.deviceName" placeholder="BORTO2026" required>
+                                    </label>
+                                    <label for="operating-mode">
+                                        System Operating State
+                                        <select id="operating-mode" x-model="settings.operatingMode">
+                                            <option value="auto_tou">Automatic (TOU Load Shifting)</option>
+                                            <option value="ups_backup">Standby UPS Only (Hold 100% SoC)</option>
+                                            <option value="force_charge">Force Charge (AC → Battery)</option>
+                                            <option value="force_discharge">Force Discharge (Battery → Load)</option>
+                                        </select>
+                                    </label>
+                                </div>
+
+                                <!-- Manual Status Override (Moved from footer for cleaner UI, or keep both) -->
+                                <fieldset>
+                                    <label for="status-override">
+                                        <input type="checkbox" name="status-override" id="status-override" role="switch" x-model="manual_status_override">
+                                        Manual Status Code Override (Demo / Testing)
+                                    </label>
+                                    <div x-show="manual_status_override" x-transition style="margin-top: 0.75em;">
+                                        <label for="status">
+                                            Active Status State (0 = Error, 1 = Charging, 2 = Discharging)
+                                            <select id="status" x-model.number="battstatus">
+                                                <option value="0">0 - ERROR</option>
+                                                <option value="1">1 - CHARGING</option>
+                                                <option value="2">2 - DISCHARGING</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                </fieldset>
+
+                                <button type="submit" class="secondary" :aria-busy="savingSettings">Save Device Settings</button>
+                            </form>
+                        </details>
+                        <hr />
+                    </div>
+
+                    <!-- 2. TIME OF USE (TOU) SCHEDULE -->
+                    <div role="grid">
+                        <details name="settings-group">
+                            <summary role="button">Time of Use (TOU) Schedule</summary>
+                            <form @submit.prevent="saveTouSettings">
+                                <div class="grid">
+                                    <label for="tou-preset">
+                                        Utility Rate Preset
+                                        <select id="tou-preset" x-model="settings.tou.preset" @change="applyTouPreset">
+                                            <option value="winter">Ontario TOU - Winter (Nov 1 – Apr 30)</option>
+                                            <option value="summer">Ontario TOU - Summer (May 1 – Oct 31)</option>
+                                            <option value="ulo">Ontario Ultra-Low Overnight (ULO)</option>
+                                            <option value="custom">Custom Schedule</option>
+                                        </select>
+                                    </label>
+                                    <label>
+                                        Device Clock Sync (Offline RTC Fallback)
+                                        <button type="button" class="outline" @click="syncBrowserTime">Sync Pi Time with Browser</button>
+                                    </label>
+                                </div>
+
+                                <div class="grid">
+                                    <label>
+                                        <strong>Off-Peak Charge Window (Start – End)</strong>
+                                        <div role="group">
+                                            <input type="time" x-model="settings.tou.offPeakStart" required>
+                                            <input type="time" x-model="settings.tou.offPeakEnd" required>
+                                        </div>
+                                    </label>
+                                    <label>
+                                        <strong>Minimum SLA Reserve SoC (%)</strong>
+                                        <input type="number" min="20" max="80" step="5" x-model.number="settings.tou.reserveSoc">
+                                    </label>
+                                </div>
+
+                                <div class="grid">
+                                    <label>
+                                        <strong>Primary On-Peak Discharge (Start – End)</strong>
+                                        <div role="group">
+                                            <input type="time" x-model="settings.tou.onPeak1Start" required>
+                                            <input type="time" x-model="settings.tou.onPeak1End" required>
+                                        </div>
+                                    </label>
+                                    <label>
+                                        <strong>Secondary On-Peak Discharge (Optional)</strong>
+                                        <div role="group">
+                                            <input type="time" x-model="settings.tou.onPeak2Start">
+                                            <input type="time" x-model="settings.tou.onPeak2End">
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <label for="weekends-offpeak">
+                                    <input type="checkbox" id="weekends-offpeak" role="switch" x-model="settings.tou.weekendsOffPeak">
+                                    Hold Standby on Weekends (24h Off-Peak Rate)
+                                </label>
+                                <br>
+                                <button type="submit" class="secondary" :aria-busy="savingSettings">Save TOU Schedule</button>
+                            </form>
+                        </details>
+                        <hr />
+                    </div>
+
+                    <!-- 3. WI-FI CONFIGURATION (Uses existing wifiManager or bortoMonitor) -->
+                    <div role="grid">
+                        <details name="settings-group">
+                            <summary role="button">Wi-Fi Configuration</summary>
+                            <div x-data="wifiManager()">
+                                
+                                <!-- Current Wi-Fi Status Banner -->
+                                <article :style="connected ? 'background-color: var(--discharging-background); outline: solid var(--discharging-outline) thin; padding: 0.75em 1em; margin-bottom: 1em;' : 'background-color: var(--error-background); outline: solid var(--error-outline) thin; padding: 0.75em 1em; margin-bottom: 1em;'">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                                        <div>
+                                            <strong>Current Network: </strong>
+                                            <span x-text="connected ? (current_ssid || 'Connected') : 'Disconnected (Hotspot Mode)'"></span>
+                                        </div>
+                                        <small x-show="connected" style="opacity: 0.85;">● Active</small>
+                                    </div>
+                                </article>
+
+                                <p><small>Switch BORTO to a new local wireless network. Submitting new credentials will overwrite any previously cached profile for that SSID.</small></p>
+                                <div class="grid">
+                                    <label>
+                                        Network Name (SSID)
+                                        <input type="text" x-model="ssid" placeholder="Enter Wi-Fi SSID">
+                                    </label>
+                                    <label>
+                                        Password
+                                        <input type="password" x-model="password" placeholder="Password">
+                                    </label>
+                                </div>
+                                <button class="secondary" @click="connectToWifi" x-text="connecting ? 'Connecting...' : 'Update Wi-Fi Network'" :disabled="connecting || !ssid"></button>
+                            </div>
+                        </details>
+                        <hr />
+                    </div>
+
+                    <!-- 4. POWER CYCLE & SYSTEM -->
+                    <div role="grid">
+                        <details name="settings-group">
+                            <summary role="button">System & Power Control</summary>
+                            <article style="background-color: var(--error-background); outline: solid var(--error-outline) thin;">
+                                <h4>Power Cycle Device</h4>
+                                <p>Rebooting restarts the Raspberry Pi host and drops the web connection for ~45 seconds. Shutting down requires physically cycling power to restart.</p>
+                                <div class="grid">
+                                    <button type="button" class="secondary" @click="confirmPower('reboot')">Reboot BORTO</button>
+                                    <button type="button" class="contrast" @click="confirmPower('shutdown')">Safe Shutdown</button>
+                                </div>
+                            </article>
+                        </details>
+                        <hr />
+                    </div>
+
+                    <!-- 5. DEBUG OPTIONS (Setpoints, Duty Cycle, & Sensor Calibration) -->
+                    <div role="grid">
+                        <details name="settings-group">
+                            <summary role="button">Debug Options</summary>
+                            
+                            <!-- Master Enable/Disable Switch -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 1em;">
+                                <label for="debug-enable-toggle" style="margin-bottom: 0;">
+                                    <input type="checkbox" id="debug-enable-toggle" role="switch" x-model="debug.enabled" @change="if(debug.enabled) loadDebugParams()">
+                                    <strong>Enable Hardware Debug & Calibration Mode</strong>
+                                </label>
+                                <button type="button" class="outline secondary" style="width: auto; padding: 0.4em 0.8em; margin-bottom: 0;" @click="loadDebugParams" :disabled="!debug.enabled" :aria-busy="loadingDebug">
+                                    ↻ Read from MCU
+                                </button>
+                            </div>
+
+                            <!-- Locked unless debug.enabled is true -->
+                            <fieldset :disabled="!debug.enabled" :style="!debug.enabled ? 'opacity: 0.55; transition: opacity 0.2s ease;' : 'transition: opacity 0.2s ease;'">
+                                
+                                <!-- DC1 & DC2 Setpoints + Live Duty Cycle Readouts -->
+                                <div class="grid">
+                                    <!-- DC1 Control Card -->
+                                    <article style="margin-bottom: 1em;">
+                                        <header><strong>DC1 Stage Control</strong></header>
+                                        <label for="dc1-setpoint">
+                                            DC1 Voltage Setpoint (V)
+                                            <input type="number" id="dc1-setpoint" step="0.01" x-model.number="debug.dc1_setpoint">
+                                        </label>
+                                        <div>
+                                            <small>Current Duty Cycle</small>
+                                            <div style="display: grid; grid-template-columns: 2fr 1fr; align-items: center; margin-top: 0.25em;">
+                                                <article style="padding: 0; margin: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                                    <p class="metrics-value" style="margin: 0; padding: 0.25em 0;" x-text="debug.dc1_duty_cycle !== null ? debug.dc1_duty_cycle.toFixed(1) : '--'"></p>
+                                                </article>
+                                                <p class="metrics-value" style="margin: 0; text-align: left; padding-left: 0.5em;">%</p>
+                                            </div>
+                                        </div>
+                                    </article>
+
+                                    <!-- DC2 Control Card -->
+                                    <article style="margin-bottom: 1em;">
+                                        <header><strong>DC2 Stage Control</strong></header>
+                                        <label for="dc2-setpoint">
+                                            DC2 Voltage Setpoint (V)
+                                            <input type="number" id="dc2-setpoint" step="0.01" x-model.number="debug.dc2_setpoint">
+                                        </label>
+                                        <div>
+                                            <small>Current Duty Cycle</small>
+                                            <div style="display: grid; grid-template-columns: 2fr 1fr; align-items: center; margin-top: 0.25em;">
+                                                <article style="padding: 0; margin: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                                    <p class="metrics-value" style="margin: 0; padding: 0.25em 0;" x-text="debug.dc2_duty_cycle !== null ? debug.dc2_duty_cycle.toFixed(1) : '--'"></p>
+                                                </article>
+                                                <p class="metrics-value" style="margin: 0; text-align: left; padding-left: 0.5em;">%</p>
+                                            </div>
+                                        </div>
+                                    </article>
+                                </div>
+
+                                <button type="button" class="secondary" @click="saveDebugSetpoints" :aria-busy="savingSettings">
+                                    Write DC1 & DC2 Setpoints
+                                </button>
+
+                                <hr />
+
+                                <!-- Sensor Calibration (Slope 'm' & Offset 'b') -->
+                                <h4>Sensor Linear Calibration</h4>
+                                <div class="grid">
+                                    <!-- DC1 Voltage Sensor -->
+                                    <article>
+                                        <header><strong>DC1 Voltage Sensor</strong></header>
+                                        <label>
+                                            Calibration Slope
+                                            <input type="number" step="0.0001" x-model.number="debug.cal.dc1_v_slope">
+                                        </label>
+                                        <label>
+                                            Calibration Offset
+                                            <input type="number" step="0.0001" x-model.number="debug.cal.dc1_v_offset">
+                                        </label>
+                                    </article>
+
+                                    <!-- DC1 Current Sensor -->
+                                    <article>
+                                        <header><strong>DC1 Current Sensor</strong></header>
+                                        <label>
+                                            Calibration Slope
+                                            <input type="number" step="0.0001" x-model.number="debug.cal.dc1_i_slope">
+                                        </label>
+                                        <label>
+                                            Calibration Offset
+                                            <input type="number" step="0.0001" x-model.number="debug.cal.dc1_i_offset">
+                                        </label>
+                                    </article>
+
+                                    <!-- DC2 Voltage Sensor -->
+                                    <article>
+                                        <header><strong>DC2 Voltage Sensor</strong></header>
+                                        <label>
+                                            Calibration Slope
+                                            <input type="number" step="0.0001" x-model.number="debug.cal.dc2_v_slope">
+                                        </label>
+                                        <label>
+                                            Calibration Offset
+                                            <input type="number" step="0.0001" x-model.number="debug.cal.dc2_v_offset">
+                                        </label>
+                                    </article>
+
+                                    <!-- RTD Temp Sensor -->
+                                    <article>
+                                        <header><strong>Temperature Sensor</strong></header>
+                                        <label>
+                                            Calibration Slope
+                                            <input type="number" step="0.0001" x-model.number="debug.cal.temp_slope">
+                                        </label>
+                                        <label>
+                                            Calibration Offset
+                                            <input type="number" step="0.0001" x-model.number="debug.cal.temp_offset">
+                                        </label>
+                                    </article>
+                                </div>
+
+                                <button type="button" class="secondary" @click="saveSensorCalibration" :aria-busy="savingSettings">
+                                    Write Sensor Calibration
+                                </button>
+                            </fieldset>
+                        </details>
+                        <hr />
+                    </div>
+                </article>
+
+                <!-- Power Confirmation Modal -->
+                <dialog :open="powerModal.open">
+                    <article>
+                        <header>
+                            <button aria-label="Close" rel="prev" @click="powerModal.open = false"></button>
+                            <strong x-text="powerModal.title">Confirm Power Action</strong>
+                        </header>
+                        <p x-text="powerModal.message"></p>
+                        <footer>
+                            <button class="secondary outline" @click="powerModal.open = false">Cancel</button>
+                            <button class="secondary" @click="executePowerAction" :aria-busy="savingSettings">Confirm</button>
+                        </footer>
+                    </article>
+                </dialog>
+            </section>
             <section x-show="activeTab === 'troubleshooting'"> <!-- Troubleshooting UI --> </section>
         </div>
         <label for="theme-toggle">
             <input type="checkbox" name="theme-toggle" id="theme-toggle" role="switch">
             Dark Mode
         </label>
-        <hr>
-        <div role="group">
-            <label for="status-override">
-                <input type="checkbox" name="status-override" id="status-override" role="switch" x-model="manual_status_override" unchecked>
-                Status Manual Override
-            </label>
-            <label for="status">
-                <input type="number" name="status" id="status" x-model.number="battstatus">
-                Status Code
-            </label>
-        </div>
 
     </main>
 
