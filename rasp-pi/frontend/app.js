@@ -264,7 +264,7 @@ document.addEventListener('alpine:init', () => {
                 }
                 this.connected = this.connectionstatus.connected;
                 this.current_ssid = this.connectionstatus.ssid;
-                console.log(this.connectionstatus);
+                // console.log(this.connectionstatus);
 
             } catch (error) {
                 console.error('Network status chould not be verified.', error);
