@@ -25,11 +25,11 @@ int validate_data(BORTOData_t *data) {
             }
             break;
         case BATTERY:
-            if (data->current == 0) {
+            if (data->current == 0 && data->status != CHARGED) {
                 return 4; // Invalid: Battery location should have a current value
             }
-            else if (data->current > 5000) {
-                return 8; // Invalid: Current exceeds maximum expected value
+            else if (data->current > 5000 || data->current < -5000) {
+                return 8; // Invalid: Current magnitude exceeds maximum expected value (5A)
             }
             break;
         case ENCLOSURE:
@@ -73,4 +73,28 @@ int send_data_to_pi(UART_HandleTypeDef *huart, char *buffer, uint16_t buffer_siz
     );
     HAL_UART_Transmit(huart, (uint8_t *)buffer, uart_message_length, HAL_MAX_DELAY);
     return 0; // Return 0 for success
+}
+
+int parse_command_from_pi(const char *rx_buffer, BORTOCommand_t *cmd_out) {
+    if (rx_buffer == NULL || cmd_out == NULL) return 1;
+
+    const char *start = strstr(rx_buffer, "nc");
+    const char *end = strstr(rx_buffer, "ec");
+    if (start == NULL || end == NULL || end <= start) {
+        return 2; // Invalid framing
+    }
+
+    int type_tmp = 0, target_tmp = 0, v1_tmp = 0, v2_tmp = 0, v3_tmp = 0;
+    int matched = sscanf(start + 2, "%d,%d,%d,%d,%d", &type_tmp, &target_tmp, &v1_tmp, &v2_tmp, &v3_tmp);
+    if (matched != 5) {
+        return 3; // Expected 5 comma-separated integers
+    }
+
+    cmd_out->cmd_type      = (CommandType_t)type_tmp;
+    cmd_out->target        = (uint8_t)target_tmp;
+    cmd_out->setpoint      = (int16_t)v1_tmp;
+    cmd_out->sensor_slope  = (int16_t)v2_tmp;
+    cmd_out->sensor_offset = (int16_t)v3_tmp;
+
+    return 0; // Valid command packet
 }

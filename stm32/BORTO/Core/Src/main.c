@@ -27,6 +27,9 @@
 #include "sensors.h"
 #include "inverter.h"
 
+#include "stm_to_rasp_pi.h"
+#include <string.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,7 +59,26 @@ TIM_HandleTypeDef htim8;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
+// Initializing borto_data structure with default values
+BORTOData_t borto_data[5] = {
+    { .location = DC1,       .status = CHARGING_OK, .error = NO_ERROR, .setpoint = 28800, .sensor_slope = 1000, .sensor_offset = 0 },
+    { .location = BATTERY,   .status = CHARGING_OK, .error = NO_ERROR, .setpoint = 1000,  .sensor_slope = 1000, .sensor_offset = 0 },
+    { .location = DC2,       .status = CHARGING_OK, .error = NO_ERROR, .setpoint = 39600, .sensor_slope = 1000, .sensor_offset = 0 },
+    { .location = INVERTER,  .status = CHARGING_OK, .error = NO_ERROR, .setpoint = 0,     .sensor_slope = 1000, .sensor_offset = 0 },
+    { .location = ENCLOSURE, .status = CHARGING_OK, .error = NO_ERROR, .setpoint = 0,     .sensor_slope = 1000, .sensor_offset = 0 }
+};
 
+// 2. UART RX Interrupt buffers and flags
+#define RX_BUFFER_SIZE 64
+uint8_t uart_rx_byte;                        // Single byte buffer for HAL_UART_Receive_IT
+char uart_rx_working_buf[RX_BUFFER_SIZE];    // Fills up byte-by-byte inside the ISR
+char uart_cmd_ready_buf[RX_BUFFER_SIZE];     // Holds the completed string for main() to parse
+volatile uint8_t uart_rx_idx = 0;
+volatile uint8_t pi_cmd_ready = 0;           // Flag: 1 = new command waiting to be parsed
+
+BORTOCommand_t incoming_pi_cmd;
+OperatingMode_t current_operating_mode = MODE_CHARGE;
+uint8_t system_shutdown_latched = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,19 +117,10 @@ int main(void)
 
   /* USER CODE BEGIN Init */
 
-/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
-
-  /* USER CODE END Init */
-
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
-
-  /* Initialize all configured peripherals */
-
 
   /* USER CODE END SysInit */
 
@@ -122,8 +135,6 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   /* MCU Configuration --------------------------------------------------------*/
-
-
     // 1. Bind TIM1 handle to the Buck Converter module
   	Boost_Init(&htim1);
   	Boost_PI_Init();
@@ -137,14 +148,26 @@ int main(void)
     Sensors_Init_Start(&hadc1);
     Sensors_Init_Start_Boost(&hadc2);
 
+    HAL_UART_Receive_IT(&huart3, &uart_rx_byte, 1); // Start UART RX interrupt for receiving commands from Raspberry Pi
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    if (pi_cmd_ready) {
+        pi_cmd_ready = 0; // Reset the flag
+        int parse_result = parse_command_from_pi(uart_cmd_ready_buf, &incoming_pi_cmd);
+        if (parse_result == 0) {
+            // Successfully parsed command, now handle it
+            process_pi_command(&incoming_pi_cmd);
+        } else {
+            // Handle parsing error (e.g., log it, send error response, etc.)
+        }
+    }
     /* USER CODE END WHILE */
-
+    
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -612,6 +635,89 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+// Executes parsed command from the Raspberry Pi and updates the borto_data structure
+void process_pi_command(BORTOCommand_t *cmd) {
+  if (cmd == NULL) return;
+
+  switch (cmd->command_type) {
+    case CMD_SET_PARAM:
+      // cmd->target is of type Location_t (0=DC1, 1=BATTERY, 2=DC2, 3=INVERTER, 4=ENCLOSURE)
+      if (cmd->target <= ENCLOSURE) {
+        borto_data[cmd->target].setpoint = cmd->setpoint;
+        borto_data[cmd->target].sensor_slope = cmd->sensor_slope;
+        borto_data[cmd->target].sensor_offset = cmd->sensor_offset;
+      }
+      break;
+    case CMD_SET_MODE:
+      current_operating_mode = (OperatingMode_t)cmd->target; // target is OperatingMode_t
+      // Sets the same operating mode for all locations
+      for (int i = 0; i <= ENCLOSURE; i++) {
+          if (current_operating_mode == MODE_STANDBY) {
+              borto_data[i].status = STANDBY;
+          } else if (current_operating_mode == MODE_CHARGE) {
+              borto_data[i].status = CHARGING;
+          } else if (current_operating_mode == MODE_DISCHARGE) {
+              borto_data[i].status = DISCHARGING;
+          }
+      }
+      break;
+    case CMD_SYS_ACTION:
+      // cmd->target is SysAction_t (0=CLEAR_FAULT, 1=REBOOT_MCU, 2=SHUTDOWN)
+      switch (cmd->target) {
+        case SYS_CLEAR_FAULT:
+          system_shutdown_latched = 0;
+          // Clear all errors in borto_data
+          for (int i = 0; i <= ENCLOSURE; i++) {
+              borto_data[i].error = NO_ERROR;
+          }
+          break;
+        case SYS_REBOOT_MCU:
+          NVIC_SystemReset(); // Trigger a system reset
+          break;
+        case SYS_SHUTDOWN:
+          system_shutdown_latched = 1; // Set a flag to indicate shutdown
+          borto_data[DC1].duty_cycle = 0;
+          borto_data[DC2].duty_cycle = 0;
+          borto_data[INVERTER].duty_cycle = 0;
+          // TODO: All hardware timers should be stopped here!!
+          break;
+        default:
+          // Handle unknown system action if necessary
+          break;
+      }
+      break;
+    default:
+      // Handle unknown command type if necessary
+      break;
+  }
+}
+
+// UART RX Complete Interrupt Callback
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+  if (huart->Instance == USART3) { // Check if the interrupt is from USART3
+    if (uart_rx_byte == '\n') { // End of command
+      uart_cmd_ready_buf[uart_rx_idx] = '\0'; // Null-terminate the string
+      pi_cmd_ready = 1; // Set flag to indicate a new command is ready
+      uart_rx_idx = 0; // Reset index for next command
+    } else if (uart_rx_byte != '\r') { // Ignore carriage return
+      if (uart_rx_idx < RX_BUFFER_SIZE - 1) { // Prevent buffer overflow
+        uart_rx_working_buf[uart_rx_idx++] = uart_rx_byte; // Store received byte
+      }
+    }
+    HAL_UART_Receive_IT(huart, &uart_rx_byte, 1); // Restart UART RX interrupt
+  }
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
+  if (huart->Instance == USART3) {
+    // Handle UART error (e.g., framing error, noise error, overrun error)
+    // For now, we can just reset the UART receive process
+    uart_rx_idx = 0; // Reset index
+    pi_cmd_ready = 0; // Clear command ready flag
+    HAL_UART_Receive_IT(huart, &uart_rx_byte, 1); // Restart UART RX interrupt
+  }
+}
 
 /* USER CODE END 4 */
 

@@ -1,0 +1,200 @@
+<br>
+<!-- Live Diagnostic Alert Banner (Appears automatically if BORTO is in ERROR state) -->
+<article x-show="battstatus == 3" style="background-color: var(--error-background); outline: solid var(--error-outline) thin;">
+    <header style="display: flex; justify-content: space-between; align-items: center;">
+        <strong>⚠️ Active Hardware Fault Detected</strong>
+        <mark style="background-color: var(--error-outline); color: white;" x-text="'Error Code: ' + (activeError || 0)"></mark>
+    </header>
+    <p style="margin-bottom: 0;">
+        BORTO is currently reporting an <strong>ERROR</strong> state. Refer to <strong>Section 3: Fault & Error Code Reference</strong> below for diagnostic and recovery steps, or check the physical LCD screen.
+    </p>
+</article>
+
+<article>
+    <header>
+        <div class="grid" style="align-items: center;">
+            <div>
+                <h3 style="margin-bottom: 0.25em;">B.O.R.T.O. Operator & Field Manual</h3>
+                <small>System Architecture, Setup, & Fault Diagnostics</small>
+            </div>
+            <div>
+                <input 
+                    type="search" 
+                    x-model="manualSearch" 
+                    placeholder="Search manual (e.g., 'error', 'wifi', 'DC2', 'LCD')..." 
+                    style="margin-bottom: 0;"
+                >
+            </div>
+        </div>
+    </header>
+
+    <!-- SECTION 1: SYSTEM OVERVIEW & ARCHITECTURE -->
+    <div role="grid" x-show="!manualSearch || $el.innerText.toLowerCase().includes(manualSearch.toLowerCase())">
+        <details name="manual-group" open>
+            <summary role="button">1. System Overview & Architecture</summary>
+            <p>
+                The <strong>B.O.R.T.O.</strong> energy storage and UPS system manages power flow between the AC grid, a 12V SLA battery bank, and AC/DC loads to perform automated Time-of-Use (TOU) load shifting and backup power protection.
+            </p>
+            <div class="grid">
+                <article style="margin-bottom: 0;">
+                    <header><strong>Power Electronics Stage (STM32)</strong></header>
+                    <ul style="margin-bottom: 0;">
+                        <li><strong>DC1 (Charger/Buck-Boost):</strong> Regulates charging voltage and current into the battery bank.</li>
+                        <li><strong>Battery Bank:</strong> Monitored for terminal voltage and current draw/charge.</li>
+                        <li><strong>DC2 (Boost Stage):</strong> Steps up battery voltage for the high-voltage DC bus (measured at <code>TP5</code>).</li>
+                        <li><strong>Inverter Stage:</strong> Converts the DC bus to AC output at the receptacle terminals.</li>
+                        <li><strong>Enclosure:</strong> Monitored via RTD temperature sensor for thermal safety limits.</li>
+                    </ul>
+                </article>
+                <article style="margin-bottom: 0;">
+                    <header><strong>Telemetry & Control (Raspberry Pi)</strong></header>
+                    <ul style="margin-bottom: 0;">
+                        <li><strong>UART Serial Link:</strong> Streams 10-variable telemetry packets between the STM32 MCU and the SQLite database.</li>
+                        <li><strong>Local HMI:</strong> On-board I2C LCD and two adjacent tactile navigation buttons.</li>
+                        <li><strong>Web Dashboard:</strong> Containerized FastAPI + Alpine.js interface for live plotting, TOU scheduling, and sensor calibration.</li>
+                    </ul>
+                </article>
+            </div>
+        </details>
+        <hr />
+    </div>
+
+    <!-- SECTION 2: NETWORK SETUP & LCD NAVIGATION -->
+    <div role="grid" x-show="!manualSearch || $el.innerText.toLowerCase().includes(manualSearch.toLowerCase())">
+        <details name="manual-group">
+            <summary role="button">2. First-Time Network Setup & Local LCD Navigation</summary>
+            <h4>Captive Portal Wi-Fi Provisioning</h4>
+            <p>If BORTO cannot reach a saved Wi-Fi network on boot, it automatically broadcasts a local setup hotspot:</p>
+            <ol>
+                <li>Power on B.O.R.T.O. and wait for the on-board LCD to display <code>Connect to BORTO_Setup</code>.</li>
+                <li>Connect a Wi-Fi-enabled device to the <strong>BORTO_Setup</strong> network using default password <code>bortoinit</code>.</li>
+                <li>Open a web browser and navigate to <code>http://10.42.0.1</code>.</li>
+                <li>Enter your local network's <strong>SSID</strong> and <strong>WPA2 Password</strong> and click <strong>Connect</strong>.</li>
+                <li>Within 20 seconds, <code>BORTO_Setup</code> will disconnect and the LCD will update to display a local IP address (e.g., <code>192.xxx.x.x</code> or <code>10.xxx.x.x</code>).</li>
+            </ol>
+            <h4>On-Board LCD & Tactile Buttons</h4>
+            <p>
+                During normal operation, the LCD displays <code>B.O.R.T.O. Ready</code>. Press the <strong>two tactile buttons</strong> adjacent to the LCD to cycle through menus, including the <code>Local IP</code> screen, real-time bus voltages, and active fault states.
+            </p>
+        </details>
+        <hr />
+    </div>
+
+    <!-- SECTION 3: FAULT & ERROR CODE REFERENCE TABLE -->
+    <div role="grid" x-show="!manualSearch || $el.innerText.toLowerCase().includes(manualSearch.toLowerCase())">
+        <details name="manual-group">
+            <summary role="button">3. STM32 Fault & Error Code Reference</summary>
+            <p>When System Status enters <code>2 - ERROR</code>, the STM32 reports a specific fault code in the telemetry packet:</p>
+            <div class="overflow-auto">
+                <table class="striped">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Fault Name</th>
+                            <th>Description / Cause</th>
+                            <th>Corrective Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>0</code></td>
+                            <td><strong>NO_ERROR</strong></td>
+                            <td>System operating within nominal parameters.</td>
+                            <td>None required.</td>
+                        </tr>
+                        <tr>
+                            <td><code>1</code></td>
+                            <td><strong>OVER_VOLTAGE</strong></td>
+                            <td>DC1, Battery, or DC2 bus exceeded safe voltage limit.</td>
+                            <td>Disconnect load/source. Verify DC1/DC2 setpoints and voltage sensor slope/offset in <em>Settings → Debug Options</em>.</td>
+                        </tr>
+                        <tr>
+                            <td><code>2</code></td>
+                            <td><strong>UNDER_VOLTAGE</strong></td>
+                            <td>Battery or bus dropped below low-voltage cutout (LVC).</td>
+                            <td>Switch system to <strong>Force Charge</strong> or reduce load. Check battery terminal voltage with a DMM.</td>
+                        </tr>
+                        <tr>
+                            <td><code>3</code></td>
+                            <td><strong>OVER_CURRENT</strong></td>
+                            <td>Current draw exceeded hardware safety threshold.</td>
+                            <td>Disconnect AC/DC load and inspect for short circuits. Verify current sensor calibration.</td>
+                        </tr>
+                        <tr>
+                            <td><code>4</code></td>
+                            <td><strong>UNDER_CURRENT</strong></td>
+                            <td>Unexpected open-circuit or reverse current condition.</td>
+                            <td>Check fuse integrity, breaker connections, and battery terminal leads.</td>
+                        </tr>
+                        <tr>
+                            <td><code>5</code></td>
+                            <td><strong>OVER_TEMPERATURE</strong></td>
+                            <td>Enclosure/MOSFET temperature exceeded thermal limit.</td>
+                            <td>Power down load, verify enclosure airflow/heatsinks, and allow hardware to cool before resetting.</td>
+                        </tr>
+                        <tr>
+                            <td><code>6</code></td>
+                            <td><strong>UNDER_TEMPERATURE</strong></td>
+                            <td>RTD sensor reading below minimum operating threshold (often an open sensor wire).</td>
+                            <td>Inspect RTD temperature sensor wiring and check temperature offset in Debug Options.</td>
+                        </tr>
+                        <tr>
+                            <td><code>7</code></td>
+                            <td><strong>PWM_FAULT</strong></td>
+                            <td>Hardware gate driver fault or duty cycle saturation on DC1/DC2.</td>
+                            <td>Inspect half-bridge MOSFET drivers and verify duty cycle readouts in Debug Options.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </details>
+        <hr />
+    </div>
+
+    <!-- SECTION 4: SENSOR CALIBRATION & HARDWARE VERIFICATION -->
+    <div role="grid" x-show="!manualSearch || $el.innerText.toLowerCase().includes(manualSearch.toLowerCase())">
+        <details name="manual-group">
+            <summary role="button">4. Hardware Verification & Sensor Calibration Guide</summary>
+            <p>If telemetry plots on the <strong>Metrics</strong> tab diverge from physical Digital Multimeter (DMM) readings by more than <code>±0.5V</code>:</p>
+            <ol>
+                <li>Connect a DMM across the target test points (e.g., positive lead on <code>TP5</code> and negative lead on <code>TPGND</code> for DC2 Boost output).</li>
+                <li>Navigate to <strong>Settings → Debug Options</strong> and toggle <strong>Enable Hardware Debug & Calibration Mode</strong>.</li>
+                <li>Click <strong>↻ Read from MCU</strong> to fetch the active linear calibration parameters ($y = mx + b$).</li>
+                <li>Adjust the <strong>Calibration Slope ($m$)</strong> and <strong>Calibration Offset ($b$)</strong> for the corresponding sensor (DC1 Voltage, Battery Current, DC2 Voltage, or Temperature).</li>
+                <li>Click <strong>Write Sensor Calibration</strong> to transmit the updated coefficients to the STM32 over UART.</li>
+            </ol>
+            <button type="button" class="secondary outline" style="width: auto;" @click="activeTab = 'settings'">
+                Go to Settings & Debug Options →
+            </button>
+        </details>
+        <hr />
+    </div>
+
+    <!-- SECTION 5: COMMON SYMPTOMS & QUICK FIXES -->
+    <div role="grid" x-show="!manualSearch || $el.innerText.toLowerCase().includes(manualSearch.toLowerCase())">
+        <details name="manual-group">
+            <summary role="button">5. Common Symptoms & Quick Fixes</summary>
+            <article style="margin-bottom: 1em;">
+                <header><strong>Symptom: Charts are frozen or showing "--" values</strong></header>
+                <p style="margin-bottom: 0;">
+                    <strong>Cause:</strong> The UART serial service container is not receiving packets from the STM32, or the STM32 is unpowered.<br>
+                    <strong>Fix:</strong> Verify the STM32 board has power and check the <code>/dev/serial0</code> RX/TX jumper connections. If hardware connections are secure, reboot BORTO via <em>Settings → System & Power Control</em>.
+                </p>
+            </article>
+            <article style="margin-bottom: 1em;">
+                <header><strong>Symptom: TOU Schedule is triggering at the wrong time of day</strong></header>
+                <p style="margin-bottom: 0;">
+                    <strong>Cause:</strong> If BORTO booted without internet access (offline or AP mode), the Raspberry Pi clock may have drifted due to lack of NTP sync.<br>
+                    <strong>Fix:</strong> Go to <em>Settings → Time of Use (TOU) Schedule</em> and click <strong>Sync Pi Time with Browser</strong> to push your device's local clock to the system.
+                </p>
+            </article>
+            <article style="margin-bottom: 0;">
+                <header><strong>Symptom: Dashboard is stuck on the red ERROR banner during testing</strong></header>
+                <p style="margin-bottom: 0;">
+                    <strong>Cause:</strong> Either the STM32 is reporting Status <code>2</code>, or <strong>Manual Status Code Override</strong> is enabled.<br>
+                    <strong>Fix:</strong> Check <em>Settings → Device & Operating Mode</em> and ensure the <strong>Manual Status Code Override</strong> switch is turned off.
+                </p>
+            </article>
+        </details>
+    </div>
+</article>

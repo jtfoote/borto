@@ -1,0 +1,372 @@
+<section 
+    x-show="activeTab === 'metrics'" 
+    x-transition.delay.100ms 
+    x-transition:enter.duration.250ms
+    x-transition:leave.duration.50ms
+>
+    <br>
+    <article>
+        <!-- 1. DC1 VOLTAGE -->
+        <div role="grid">
+            <details name="metrics-group" open>
+                <summary role="button">DC1 Voltage</summary>
+                <div role="group" style="flex-wrap: wrap;">
+                    <article>
+                        <div role="grid">
+                            <header><h3>Average</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="dc1_average_voltage"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article>
+                        <div role="grid">
+                            <header><h3>Current</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="dc1_current_voltage"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article>
+                        <div role="grid">
+                            <header><h3>Maximum</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="dc1_max_voltage"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article>
+                        <div role="grid">
+                            <header><h3>Minimum</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="dc1_min_voltage"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                <canvas id="dc1" x-init="
+                    window.dc1_chart = new Chart($el, {
+                        type: 'line',
+                        data: {
+                            labels: [],
+                            datasets: [
+                                {
+                                    label: 'DC1 Voltage (V)',
+                                    data: [],
+                                    borderColor: '#e36916',
+                                    backgroundColor: 'rgba(227, 105, 22, 0.2)',
+                                    borderWidth: 2,
+                                    tension: 0.1
+                                },
+                                {
+                                    label: 'DC1 Avg Voltage (V)',
+                                    data: [],
+                                    borderColor: '#9abdd6',
+                                    borderWidth: 2,
+                                    tension: 0.2,
+                                    pointStyle: false
+                                }
+                            ]
+                        },
+                        options: { animation: { duration: 300 } }
+                    });
+                "></canvas>
+                <div role="group">
+                    <label>
+                        <input type="checkbox" role="switch" checked @change="window.dc1_chart.setDatasetVisibility(0, $el.checked); window.dc1_chart.update()">
+                        Voltage
+                    </label>
+                    <label>
+                        <input type="checkbox" role="switch" checked @change="window.dc1_chart.setDatasetVisibility(1, $el.checked); window.dc1_chart.update()">
+                        Avg. Voltage
+                    </label>
+                </div>
+            </details>
+            <hr />
+        </div>
+
+        <!-- 2. BATTERY CURRENT -->
+        <div role="grid">
+            <details name="metrics-group">
+                <summary role="button">Battery Current</summary>
+                <div role="group" style="flex-wrap: wrap;">
+                    <article>
+                        <div role="grid">
+                            <header><h3>Average</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="batt_average_amp"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">A</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article>
+                        <div role="grid">
+                            <header><h3>Current</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="batt_current_amp"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">A</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article>
+                        <div role="grid">
+                            <header><h3>Maximum</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="batt_max_amp"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">A</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article>
+                        <div role="grid">
+                            <header><h3>Minimum</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="batt_min_amp"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">A</p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                <canvas id="batt" x-init="
+                    window.batt_chart = new Chart($el, {
+                        type: 'line',
+                        data: {
+                            labels: [],
+                            datasets: [
+                                {
+                                    label: 'Battery Current (A)',
+                                    data: [],
+                                    borderColor: '#163a55',
+                                    backgroundColor: 'rgba(22, 58, 85, 0.25)',
+                                    borderWidth: 2,
+                                    tension: 0.1
+                                },
+                                {
+                                    label: 'Avg Battery Current (A)',
+                                    data: [],
+                                    borderColor: '#4A7C59',
+                                    borderWidth: 2,
+                                    tension: 0.2,
+                                    pointStyle: false
+                                }
+                            ]
+                        },
+                        options: { animation: { duration: 300 } }
+                    });
+                "></canvas>
+                <div role="group">
+                    <label>
+                        <input type="checkbox" role="switch" checked @change="window.batt_chart.setDatasetVisibility(0, $el.checked); window.batt_chart.update()">
+                        Current
+                    </label>
+                    <label>
+                        <input type="checkbox" role="switch" checked @change="window.batt_chart.setDatasetVisibility(1, $el.checked); window.batt_chart.update()">
+                        Avg. Current
+                    </label>
+                </div>
+            </details>
+            <hr />
+        </div>
+
+        <!-- 3. DC2 VOLTAGE -->
+        <div role="grid">
+            <details name="metrics-group">
+                <summary role="button">DC2 Voltage</summary>
+                <div role="group" style="flex-wrap: wrap;">
+                    <article>
+                        <div role="grid">
+                            <header><h3>Average</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="dc2_average_voltage"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article>
+                        <div role="grid">
+                            <header><h3>Current</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="dc2_current_voltage"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article>
+                        <div role="grid">
+                            <header><h3>Maximum</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="dc2_max_voltage"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article>
+                        <div role="grid">
+                            <header><h3>Minimum</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="dc2_min_voltage"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">V</p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                <canvas id="dc2" x-init="
+                    window.dc2_chart = new Chart($el, {
+                        type: 'line',
+                        data: {
+                            labels: [],
+                            datasets: [
+                                {
+                                    label: 'DC2 Voltage (V)',
+                                    data: [],
+                                    borderColor: '#e36916',
+                                    backgroundColor: 'rgba(227, 105, 22, 0.2)',
+                                    borderWidth: 2,
+                                    tension: 0.1
+                                },
+                                {
+                                    label: 'DC2 Avg Voltage (V)',
+                                    data: [],
+                                    borderColor: '#9abdd6',
+                                    borderWidth: 2,
+                                    tension: 0.2,
+                                    pointStyle: false
+                                }
+                            ]
+                        },
+                        options: { animation: { duration: 300 } }
+                    });
+                "></canvas>
+                <div role="group">
+                    <label>
+                        <input type="checkbox" role="switch" checked @change="window.dc2_chart.setDatasetVisibility(0, $el.checked); window.dc2_chart.update()">
+                        Voltage
+                    </label>
+                    <label>
+                        <input type="checkbox" role="switch" checked @change="window.dc2_chart.setDatasetVisibility(1, $el.checked); window.dc2_chart.update()">
+                        Avg. Voltage
+                    </label>
+                </div>
+            </details>
+            <hr />
+        </div>
+
+        <!-- 4. ENCLOSURE TEMPERATURE -->
+        <div role="grid">
+            <details name="metrics-group">
+                <summary role="button">Enclosure Temperature</summary>
+                <div role="group" style="flex-wrap: wrap;">
+                    <article>
+                        <div role="grid">
+                            <header><h3>Average</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="enc_average_temp"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">°C</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article>
+                        <div role="grid">
+                            <header><h3>Current</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="enc_current_temp"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">°C</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article>
+                        <div role="grid">
+                            <header><h3>Maximum</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="enc_max_temp"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">°C</p>
+                            </div>
+                        </div>
+                    </article>
+                    <article>
+                        <div role="grid">
+                            <header><h3>Minimum</h3></header>
+                            <div style="display:grid; grid-template-columns: 1fr 2fr;">
+                                <article style="padding: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                                    <p class="metrics-value" style="padding-top:0.5em;" x-text="enc_min_temp"></p>
+                                </article>
+                                <p class="metrics-value" style="text-align: left; padding-left: 0.5em;">°C</p>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                <canvas id="enclosure" x-init="
+                    window.enc_chart = new Chart($el, {
+                        type: 'line',
+                        data: {
+                            labels: [],
+                            datasets: [
+                                {
+                                    label: 'Enclosure Temp (°C)',
+                                    data: [],
+                                    borderColor: '#d65b5b',
+                                    backgroundColor: 'rgba(214, 91, 91, 0.2)',
+                                    borderWidth: 2,
+                                    tension: 0.1
+                                },
+                                {
+                                    label: 'Avg Enclosure Temp (°C)',
+                                    data: [],
+                                    borderColor: '#9abdd6',
+                                    borderWidth: 2,
+                                    tension: 0.2,
+                                    pointStyle: false
+                                }
+                            ]
+                        },
+                        options: { animation: { duration: 300 } }
+                    });
+                "></canvas>
+                <div role="group">
+                    <label>
+                        <input type="checkbox" role="switch" checked @change="window.enc_chart.setDatasetVisibility(0, $el.checked); window.enc_chart.update()">
+                        Temperature
+                    </label>
+                    <label>
+                        <input type="checkbox" role="switch" checked @change="window.enc_chart.setDatasetVisibility(1, $el.checked); window.enc_chart.update()">
+                        Avg. Temperature
+                    </label>
+                </div>
+            </details>
+        </div>
+    </article>
+</section>

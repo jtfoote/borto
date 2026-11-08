@@ -1,0 +1,235 @@
+<!-- Dashboard UI -->
+<br>
+<div>
+    <article>
+        <!-- 1. PRIMARY SYSTEM STATUS BANNERS (0=CHARGING, 1=DISCHARGING, 2=CHARGED, 3=ERROR) -->
+        <div role="grid">
+            
+            <!-- STATUS 0: CHARGING -->
+            <article x-show="battstatus == 0" style="background-color: var(--charging-background); outline: solid var(--charging-outline) 2px; margin-bottom: 1.5em;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1em; padding: 0.5em 0;">
+                    <div class="borto-status-logo" style="align-items: center;">
+                        <img src="images/borto-logo-no-text.svg" alt="BORTO" style="height: 2.5em; padding-right: 0.75em;" />
+                        <div>
+                            <h3 class="status-text" style="margin-bottom: 0;">System Status:</h3>
+                            <small x-text="charging_stage || 'AC Grid → DC1 Charger → Battery Bank'"></small>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1.25em;">
+                        <h2 class="status-text" style="font-size: clamp(2rem, 4vw, 3em); margin-bottom: 0;">CHARGING</h2>
+                        <svg width="41" height="75" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="6" width="35" height="65" rx="6" stroke="#dc6b0d" stroke-width="5" fill="none"/>
+                            <rect x="14" y="2" width="13" height="3" rx="5" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                            <rect class="charging-bar bar-4" x="11.4" y="16" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                            <rect class="charging-bar bar-3" x="11.4" y="29" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                            <rect class="charging-bar bar-2" x="11.4" y="43" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                            <rect class="charging-bar bar-1" x="11.4" y="57" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                        </svg>
+                    </div>
+                </div>
+            </article>
+
+            <!-- STATUS 1: DISCHARGING -->
+            <article x-show="battstatus == 1" style="background-color: var(--discharging-background); outline: solid var(--discharging-outline) 2px; margin-bottom: 1.5em;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1em; padding: 0.5em 0;">
+                    <div class="borto-status-logo" style="align-items: center;">
+                        <img src="images/borto-logo-no-text.svg" alt="BORTO" style="height: 2.5em; padding-right: 0.75em;" />
+                        <div>
+                            <h3 class="status-text" style="margin-bottom: 0;">System Status:</h3>
+                            <small>Battery Bank → DC2 Boost → AC Inverter Load</small>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1.25em;">
+                        <h2 class="status-text" style="font-size: clamp(2rem, 4vw, 3em); margin-bottom: 0;">DISCHARGING</h2>
+                        <svg width="41" height="75" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="6" width="35" height="65" rx="6" stroke="#dc6b0d" stroke-width="5" fill="none"/>
+                            <rect x="14" y="2" width="13" height="3" rx="5" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                            <rect class="discharging-bar d-bar-4" x="11.4" y="16" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                            <rect class="discharging-bar d-bar-3" x="11.4" y="29" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                            <rect class="discharging-bar d-bar-2" x="11.4" y="43" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                            <rect class="discharging-bar d-bar-1" x="11.4" y="57" width="18" height="2" rx="1" stroke="#dc6b0d" stroke-width="5" fill="#dc6b0d"/>
+                        </svg>
+                    </div>
+                </div>
+            </article>
+
+            <!-- STATUS 2: CHARGED (NEW) -->
+            <article x-show="battstatus == 2" style="background-color: var(--discharging-background); outline: solid var(--discharging-outline) 2px; margin-bottom: 1.5em;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1em; padding: 0.5em 0;">
+                    <div class="borto-status-logo" style="align-items: center;">
+                        <img src="images/borto-logo-no-text.svg" alt="BORTO" style="height: 2.5em; padding-right: 0.75em;" />
+                        <div>
+                            <h3 class="status-text" style="margin-bottom: 0;">System Status:</h3>
+                            <small>100% SoC Reached — Stage 3 Float Maintenance Active</small>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1.25em;">
+                        <h2 class="status-text" style="font-size: clamp(2rem, 4vw, 3em); margin-bottom: 0;">CHARGED</h2>
+                        <!-- Solid Full 4-Bar Battery SVG -->
+                        <svg width="41" height="75" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="6" width="35" height="65" rx="6" stroke="#163a55" stroke-width="5" fill="none"/>
+                            <rect x="14" y="2" width="13" height="3" rx="5" stroke="#163a55" stroke-width="5" fill="#163a55"/>
+                            <rect x="11.4" y="16" width="18" height="2" rx="1" stroke="#163a55" stroke-width="5" fill="#163a55"/>
+                            <rect x="11.4" y="29" width="18" height="2" rx="1" stroke="#163a55" stroke-width="5" fill="#163a55"/>
+                            <rect x="11.4" y="43" width="18" height="2" rx="1" stroke="#163a55" stroke-width="5" fill="#163a55"/>
+                            <rect x="11.4" y="57" width="18" height="2" rx="1" stroke="#163a55" stroke-width="5" fill="#163a55"/>
+                        </svg>
+                    </div>
+                </div>
+            </article>
+
+            <!-- STATUS 3: ERROR (Updated from 2 to 3) -->
+            <article x-show="battstatus == 3" style="background-color: var(--error-background); outline: solid var(--error-outline) 2px; margin-bottom: 1.5em;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1em; padding: 0.5em 0;">
+                    <div class="borto-status-logo" style="align-items: center;">
+                        <img src="images/borto-logo-no-text.svg" alt="BORTO" style="height: 2.5em; padding-right: 0.75em;" />
+                        <div>
+                            <h3 class="status-text" style="margin-bottom: 0;">System Status:</h3>
+                            <small x-text="'Fault Code: ' + (activeError || 0) + ' — Action Required'"></small>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 1.25em; flex-wrap: wrap;">
+                        <h2 class="status-text" style="font-size: clamp(2rem, 4vw, 3em); margin-bottom: 0;">ERROR</h2>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d65b5b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        <button class="secondary" style="width: auto; margin-bottom: 0;" @click="activeTab = 'troubleshooting'">
+                            Open Manual →
+                        </button>
+                    </div>
+                </div>
+            </article>
+        </div>
+
+        <!-- 2. BATTERY STATE OF CHARGE (SoC) GRAPHIC CARD -->
+        <article style="margin-bottom: 1.5em;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5em;">
+                
+                <!-- Left: Dynamic SVG Battery Graphic + Large Percentage Readout -->
+                <div style="display: flex; align-items: center; gap: 1.25em;">
+                    <svg width="96" height="48" viewBox="0 0 110 54" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Outer Battery Casing -->
+                        <rect x="3" y="5" width="94" height="44" rx="8" stroke="currentColor" stroke-width="4" fill="none"/>
+                        <!-- Positive Terminal Cap -->
+                        <rect x="100" y="16" width="7" height="22" rx="3" fill="currentColor"/>
+                        <!-- Dynamic Proportional Fill Bar -->
+                        <rect x="9" y="11" height="32" rx="4"
+                              :width="Math.max(0, Math.min(100, batt_soc)) * 0.82"
+                              :fill="batt_soc < 25 ? '#d65b5b' : (batt_soc < 50 ? '#e36916' : '#5ca976')"
+                              style="transition: width 0.4s ease, fill 0.4s ease;" />
+                    </svg>
+                    <div>
+                        <div style="display: flex; align-items: baseline; gap: 0.4em;">
+                            <span style="font-size: 2.5em; font-weight: bold; line-height: 1;" x-text="batt_soc.toFixed(1) + '%'"></span>
+                            <small>SoC</small>
+                        </div>
+                        <small x-text="charging_stage" style="opacity: 0.85;"></small>
+                    </div>
+                </div>
+
+                <!-- Right: Progress Bar with SLA Reserve Cutoff Marker -->
+                <div style="flex: 1; min-width: 240px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 0.35em;">
+                        <span><strong>24V 5Ah SLA Bank</strong></span>
+                        <span x-text="'SLA Reserve Floor: ' + settings.tou.reserveSoc + '%'"></span>
+                    </div>
+                    <!-- Bar Track -->
+                    <div style="position: relative; height: 22px; background-color: var(--data-background-colour); border-radius: 12px; overflow: hidden;">
+                        <!-- Fill Level -->
+                        <div :style="'width: ' + Math.max(0, Math.min(100, batt_soc)) + '%; height: 100%; transition: width 0.4s ease; background-color: ' + (batt_soc < 25 ? '#d65b5b' : (batt_soc < settings.tou.reserveSoc ? '#e36916' : '#5ca976')) + ';'"></div>
+                        <!-- Dashed SLA Reserve Threshold Line -->
+                        <div :style="'position: absolute; top: 0; bottom: 0; left: ' + settings.tou.reserveSoc + '%; border-left: 2px dashed var(--pico-primary);'"
+                             :title="'Minimum SLA Reserve (' + settings.tou.reserveSoc + '%)'"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75em; margin-top: 0.25em; opacity: 0.75;">
+                        <span>0% (23.0V LVC)</span>
+                        <span>80% (28.8V CC→CV)</span>
+                        <span>100% (Float)</span>
+                    </div>
+                </div>
+
+            </div>
+        </article>
+
+        <!-- 3. LIVE TELEMETRY SNAPSHOT CARDS -->
+        <div class="grid" style="margin-bottom: 1em;">
+            <article style="margin-bottom: 0; cursor: pointer;" @click="activeTab = 'metrics'">
+                <header style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong>DC1 Bus</strong>
+                    <small x-text="'PWM: ' + (debug.dc1_duty_cycle ? debug.dc1_duty_cycle.toFixed(1) : '0.0') + '%'"></small>
+                </header>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; align-items: center;">
+                    <article style="padding: 0; margin: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                        <p class="metrics-value" style="margin: 0; padding: 0.35em 0;" x-text="dc1_current_voltage || '0.0'"></p>
+                    </article>
+                    <p class="metrics-value" style="margin: 0; text-align: left; padding-left: 0.5em;">V</p>
+                </div>
+            </article>
+
+            <article style="margin-bottom: 0; cursor: pointer;" @click="activeTab = 'metrics'">
+                <header style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong>Battery</strong>
+                    <small>Current</small>
+                </header>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; align-items: center;">
+                    <article style="padding: 0; margin: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                        <p class="metrics-value" style="margin: 0; padding: 0.35em 0;" x-text="batt_current_amp || '0.0'"></p>
+                    </article>
+                    <p class="metrics-value" style="margin: 0; text-align: left; padding-left: 0.5em;">A</p>
+                </div>
+            </article>
+
+            <article style="margin-bottom: 0; cursor: pointer;" @click="activeTab = 'metrics'">
+                <header style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong>DC2 Boost</strong>
+                    <small x-text="'PWM: ' + (debug.dc2_duty_cycle ? debug.dc2_duty_cycle.toFixed(1) : '0.0') + '%'"></small>
+                </header>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; align-items: center;">
+                    <article style="padding: 0; margin: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                        <p class="metrics-value" style="margin: 0; padding: 0.35em 0;" x-text="dc2_current_voltage || '0.0'"></p>
+                    </article>
+                    <p class="metrics-value" style="margin: 0; text-align: left; padding-left: 0.5em;">V</p>
+                </div>
+            </article>
+
+            <article style="margin-bottom: 0; cursor: pointer;" @click="activeTab = 'metrics'">
+                <header style="display: flex; justify-content: space-between; align-items: center;">
+                    <strong>Enclosure</strong>
+                    <small>RTD Temp</small>
+                </header>
+                <div style="display: grid; grid-template-columns: 2fr 1fr; align-items: center;">
+                    <article style="padding: 0; margin: 0; background-color: var(--data-background-colour); border-radius: 25px;">
+                        <p class="metrics-value" style="margin: 0; padding: 0.35em 0;" x-text="enc_current_temp || '0.0'"></p>
+                    </article>
+                    <p class="metrics-value" style="margin: 0; text-align: left; padding-left: 0.5em;">°C</p>
+                </div>
+            </article>
+        </div>
+
+        <!-- 4. SYSTEM CONFIGURATION & NETWORK FOOTER STRIP -->
+        <footer style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75em; padding-top: 0.5em;">
+            <div>
+                <small>
+                    <strong>Mode:</strong>
+                    <span x-text="settings.operatingMode === 'auto_tou' ? 'Auto TOU Load Shifting' : (settings.operatingMode === 'ups_backup' ? 'Standby UPS' : (settings.operatingMode === 'force_charge' ? 'Force Charge' : 'Force Discharge'))"></span>
+                </small>
+                 | 
+                <small>
+                    <strong>Off-Peak Charge:</strong>
+                    <span x-text="settings.tou.offPeakStart + ' – ' + settings.tou.offPeakEnd"></span>
+                </small>
+            </div>
+            <div>
+                <small>
+                    <strong>Wi-Fi:</strong>
+                    <span x-text="connected ? (current_ssid || 'Connected') : 'AP Mode'"></span>
+                </small>
+                <span x-show="manual_status_override" style="margin-left: 0.5em;">
+                    <mark style="background-color: var(--pico-secondary); color: white; font-size: 0.75em;">MANUAL OVERRIDE ACTIVE</mark>
+                </span>
+            </div>
+        </footer>
+    </article>
+</div>
