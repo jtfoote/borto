@@ -53,7 +53,8 @@ def main():
                     message = stm32.read_message()
 
                 if message:
-                    metric = stm32.parse_message(message)
+                    result = stm32.parse_message(message)
+                    metric = result[0] if isinstance(result, tuple) else result
                     if metric:
                         db.add(metric)
                         db.commit()
