@@ -1,56 +1,124 @@
+
 from RPLCD.i2c import CharLCD
 from gpiozero import Button
 from signal import pause
-import time
 
 
-lcd = CharLCD(
-    i2c_expander="PCF8574",
-    address=0x27,
-    port=1,
-    cols=16,
-    rows=2
-)
-rightButton = Button(17, pull_up=True, bounce_time=0.05)
-leftButton = Button(27, pull_up=True, bounce_time=0.05)
+class LCDController:
 
-menuIndex = 0
+    def __init__(self):
 
-menu = [("Page 1", "Home"), 
-        ("Page 2", "Turtle"), 
-        ("Page 3", "Pig"), 
-        ("Page 4", "Snake")
+        # Initialize LCD
+        self.lcd = CharLCD(
+            i2c_expander="PCF8574",
+            address=0x27,
+            port=1,
+            cols=16,
+            rows=2
+        )
+
+        # Initialize buttons
+        self.rightButton = Button(17, pull_up=True, bounce_time=0.05)
+        self.leftButton = Button(27, pull_up=True, bounce_time=0.05)
+
+        # Menu settings
+        self.menuIndex = 0
+        self.menu = [
+            ("Page 1", "Home"),
+            ("Page 2", "Turtle"),
+            ("Page 3", "Pig"),
+            ("Page 4", "Snake")
         ]
-totalMenuCount = len(menu)
 
-def nextMenu():
-    global menuIndex
-    menuIndex = (menuIndex + 1) % totalMenuCount
-    update_lcd()
+        # No error initially
+        self.activeError = None
 
-def previousMenu():
-    global menuIndex
-    menuIndex = (menuIndex - 1) % totalMenuCount
-    update_lcd()
+        # Assign button functions
+        self.rightButton.when_pressed = self.nextMenu
+        self.leftButton.when_pressed = self.previousMenu
 
-def update_lcd():
-    lcd.clear()
+        # Display initial menu
+        self.update_lcd()
 
-    lcd.cursor_pos = (0, 0)
-    lcd.write_string(menu[menuIndex][0][:16])
 
-    lcd.cursor_pos = (1, 0)
-    lcd.write_string(menu[menuIndex][1][:16])
+    def nextMenu(self):
 
-rightButton.when_pressed = nextMenu
-leftButton.when_pressed = previousMenu
-update_lcd()
+        # Ignore button presses during an error
+        if self.activeError is not None:
+            return
 
-try:
-    pause()
+        self.menuIndex = (self.menuIndex + 1) % len(self.menu)
+        self.update_lcd()
 
-finally:
-    lcd.clear()
-    lcd.close()
-    rightButton.close()
-    leftButton.close()
+
+    def previousMenu(self):
+
+        # Ignore button presses during an error
+        if self.activeError is not None:
+            return
+
+        self.menuIndex = (self.menuIndex - 1) % len(self.menu)
+        self.update_lcd()
+
+
+    def update_lcd(self):
+
+        # Determine what should be displayed
+        if self.activeError is None:
+            message = self.menu[self.menuIndex]
+        else:
+            message = self.activeError
+
+        # Update LCD
+        self.lcd.clear()
+
+        self.lcd.cursor_pos = (0, 0)
+        self.lcd.write_string(message[0][:16])
+
+        self.lcd.cursor_pos = (1, 0)
+        self.lcd.write_string(message[1][:16])
+
+
+    def write_to_lcd(self, message):
+
+        # Validate message
+        if (not isinstance(message, (list, tuple))
+                or len(message) != 2
+                or not all(isinstance(line, str) for line in message)):
+            raise ValueError("Message must contain two strings")
+
+        # Store error message and update display
+        self.activeError = message
+        self.update_lcd()
+
+
+    def clear_error(self):
+
+        # Remove error and return to menu
+        self.activeError = None
+        self.update_lcd()
+
+
+    def close(self):
+
+        # Release hardware resources
+        self.rightButton.when_pressed = None
+        self.leftButton.when_pressed = None
+
+        self.rightButton.close()
+        self.leftButton.close()
+
+        self.lcd.clear()
+        self.lcd.close()
+
+
+# Run only when this file is executed directly
+if __name__ == "__main__":
+
+    controller = LCDController()
+
+    try:
+        pause()
+
+    finally:
+        controller.close()
