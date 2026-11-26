@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 926 328" width="100%" font-family="system-ui, -apple-system, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    
+    <marker id="arrow-end" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M 1 1.5 L 8.5 5 L 1 8.5 Z" fill="#163a55" />
+    </marker>
+    <marker id="arrow-start" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" refX="2" refY="5" orient="auto">
+      <path d="M 9 1.5 L 1.5 5 L 9 8.5 Z" fill="#163a55" />
+    </marker>
+
+    
+    <marker id="arrow-orange-end" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M 1 1.5 L 8.5 5 L 1 8.5 Z" fill="#e36916" />
+    </marker>
+    <marker id="arrow-orange-start" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" refX="2" refY="5" orient="auto">
+      <path d="M 9 1.5 L 1.5 5 L 9 8.5 Z" fill="#e36916" />
+    </marker>
+  </defs>
+
+  
+  <rect x="2" y="2" width="922" height="324" rx="16" fill="#ffffff" stroke="#e2e8f0" stroke-width="2" />
+
+  
+  <rect x="24" y="22" width="224" height="284" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" />
+  <text x="42" y="44" fill="#64748b" font-size="11" font-weight="700" letter-spacing="1.2">HARDWARE</text>
+
+  
+  <rect x="42" y="60" width="188" height="52" rx="8" fill="#163a55" />
+  <text x="136" y="83" text-anchor="middle" fill="#ffffff" font-size="13.5" font-weight="700">Power Stage</text>
+  <text x="136" y="100" text-anchor="middle" fill="#9abdd6" font-size="11">24V SLA • DC/AC</text>
+
+  
+  <line x1="136" y1="117" x2="136" y2="145" stroke="#163a55" stroke-width="2" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+  <text x="146" y="135" fill="#64748b" font-size="10" font-weight="600">PWM / ADC</text>
+
+  
+  <rect x="42" y="150" width="188" height="52" rx="8" fill="#e36916" />
+  <text x="136" y="173" text-anchor="middle" fill="#ffffff" font-size="13.5" font-weight="700">STM32 MCU</text>
+  <text x="136" y="190" text-anchor="middle" fill="#ffedd5" font-size="11">C Firmware</text>
+
+  
+  <rect x="42" y="238" width="188" height="52" rx="8" fill="#ffffff" stroke="#163a55" stroke-width="1.8" />
+  <text x="136" y="261" text-anchor="middle" fill="#163a55" font-size="13.5" font-weight="700">LCD &amp; Buttons</text>
+  <text x="136" y="278" text-anchor="middle" fill="#64748b" font-size="11">Local HMI</text>
+
+
+  
+  <rect x="332" y="22" width="570" height="284" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" />
+  <text x="350" y="44" fill="#64748b" font-size="11" font-weight="700" letter-spacing="1.2">RASPBERRY PI</text>
+
+  
+  <path d="M 350 138 L 706 138 Q 716 138 716 128 L 716 58 Q 716 48 726 48 L 878 48 Q 888 48 888 58 L 888 204 Q 888 214 878 214 L 350 214 Q 340 214 340 204 L 340 148 Q 340 138 350 138 Z" fill="#ffffff" stroke="#9abdd6" stroke-width="1.5" stroke-dasharray="6 4" />
+  <text x="346" y="130" fill="#64748b" font-size="10" font-weight="700" letter-spacing="0.8">DOCKER STACK</text>
+
+  
+  <rect x="352" y="150" width="148" height="52" rx="8" fill="#163a55" />
+  <text x="426" y="173" text-anchor="middle" fill="#ffffff" font-size="13.5" font-weight="700">Serial &amp; TOU</text>
+  <text x="426" y="190" text-anchor="middle" fill="#9abdd6" font-size="11">Python</text>
+
+  
+  <line x1="505" y1="176" x2="535" y2="176" stroke="#163a55" stroke-width="2" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+
+  
+  <rect x="540" y="150" width="148" height="52" rx="8" fill="#ffffff" stroke="#163a55" stroke-width="1.8" />
+  <text x="614" y="173" text-anchor="middle" fill="#163a55" font-size="13.5" font-weight="700">SQLite</text>
+  <text x="614" y="190" text-anchor="middle" fill="#64748b" font-size="11">borto.db</text>
+
+  
+  <line x1="693" y1="176" x2="723" y2="176" stroke="#163a55" stroke-width="2" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+
+  
+  <rect x="728" y="150" width="148" height="52" rx="8" fill="#163a55" />
+  <text x="802" y="173" text-anchor="middle" fill="#ffffff" font-size="13.5" font-weight="700">FastAPI</text>
+  <text x="802" y="190" text-anchor="middle" fill="#9abdd6" font-size="11">Backend</text>
+
+  
+  <rect x="728" y="60" width="148" height="52" rx="8" fill="#5ca976" />
+  <text x="802" y="83" text-anchor="middle" fill="#ffffff" font-size="13.5" font-weight="700">Web UI</text>
+  <text x="802" y="100" text-anchor="middle" fill="#ecfdf5" font-size="11">Alpine • Chart.js</text>
+
+  
+  <line x1="802" y1="117" x2="802" y2="145" stroke="#163a55" stroke-width="2" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+
+  
+  <rect x="728" y="238" width="148" height="52" rx="8" fill="#ffffff" stroke="#64748b" stroke-width="1.8" />
+  <text x="802" y="261" text-anchor="middle" fill="#163a55" font-size="13.5" font-weight="700">Wi-Fi Setup</text>
+  <text x="802" y="278" text-anchor="middle" fill="#64748b" font-size="11">Host nmcli</text>
+
+  
+  <line x1="802" y1="207" x2="802" y2="233" stroke="#163a55" stroke-width="2" marker-start="url(#arrow-start)" marker-end="url(#arrow-end)" />
+  <text x="812" y="224" fill="#64748b" font-size="10" font-weight="600">JSON</text>
+
+
+  
+  
+  <line x1="235" y1="176" x2="347" y2="176" stroke="#e36916" stroke-width="2.2" marker-start="url(#arrow-orange-start)" marker-end="url(#arrow-orange-end)" />
+  <rect x="264" y="165" width="52" height="22" rx="11" fill="#fff7ed" stroke="#e36916" stroke-width="1.5" />
+  <text x="290" y="180" text-anchor="middle" fill="#c25912" font-size="10.5" font-weight="700">UART</text>
+
+  
+  <path d="M 426 202 L 426 256 Q 426 264 418 264 L 235 264" fill="none" stroke="#163a55" stroke-width="2" marker-end="url(#arrow-end)" />
+  <rect x="267" y="253" width="46" height="22" rx="11" fill="#f1f5f9" stroke="#163a55" stroke-width="1.5" />
+  <text x="290" y="268" text-anchor="middle" fill="#163a55" font-size="10.5" font-weight="700">I2C</text>
+</svg>

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="rasp-pi/frontend/images/borto-logo.svg" width="250" alt="BORTO Logo"/>
+  <img src="rasp-pi/frontend/images/borto-logo.svg" width="300" alt="BORTO Logo"/>
 </p>
 
 <h1 align="center">B.O.R.T.O.</h1>
@@ -16,6 +16,9 @@ This repository contains the complete software and embedded firmware stack power
 ---
 
 # System Architecture
+<div align="center">
+  <img src="docs/images/borto-architecture.svg" alt="B.O.R.T.O. System Architecture" width="100%" />
+</div>
 
 The software ecosystem is divided across a **Raspberry Pi** host (orchestrating scheduling, networking, data storage, and the webserver UI) and an **STM32G474RE** microcontroller (managing real-time power electronics and safety protections):
 
