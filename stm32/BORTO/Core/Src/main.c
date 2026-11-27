@@ -27,7 +27,7 @@
 #include "sensors.h"
 #include "inverter.h"
 
-#include "stm_to_rasp_pi.h"
+//#include "stm_to_rasp_pi.h"
 #include <string.h>
 
 /* USER CODE END Includes */
@@ -60,14 +60,14 @@ UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 // Initializing borto_data structure with default values
-BORTOData_t borto_data[5] = {
+/*BORTOData_t borto_data[5] = {
     { .location = DC1,       .status = CHARGING_OK, .error = NO_ERROR, .setpoint = 28800, .sensor_slope = 1000, .sensor_offset = 0 },
     { .location = BATTERY,   .status = CHARGING_OK, .error = NO_ERROR, .setpoint = 1000,  .sensor_slope = 1000, .sensor_offset = 0 },
     { .location = DC2,       .status = CHARGING_OK, .error = NO_ERROR, .setpoint = 39600, .sensor_slope = 1000, .sensor_offset = 0 },
     { .location = INVERTER,  .status = CHARGING_OK, .error = NO_ERROR, .setpoint = 0,     .sensor_slope = 1000, .sensor_offset = 0 },
     { .location = ENCLOSURE, .status = CHARGING_OK, .error = NO_ERROR, .setpoint = 0,     .sensor_slope = 1000, .sensor_offset = 0 }
 };
-
+*/
 // 2. UART RX Interrupt buffers and flags
 #define RX_BUFFER_SIZE 64
 uint8_t uart_rx_byte;                        // Single byte buffer for HAL_UART_Receive_IT
@@ -76,9 +76,9 @@ char uart_cmd_ready_buf[RX_BUFFER_SIZE];     // Holds the completed string for m
 volatile uint8_t uart_rx_idx = 0;
 volatile uint8_t pi_cmd_ready = 0;           // Flag: 1 = new command waiting to be parsed
 
-BORTOCommand_t incoming_pi_cmd;
-OperatingMode_t current_operating_mode = MODE_CHARGE;
-uint8_t system_shutdown_latched = 0;
+//BORTOCommand_t incoming_pi_cmd;
+//OperatingMode_t current_operating_mode = MODE_CHARGE;
+//uint8_t system_shutdown_latched = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -156,7 +156,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    if (pi_cmd_ready) {
+    /*if (pi_cmd_ready) {
         pi_cmd_ready = 0; // Reset the flag
         int parse_result = parse_command_from_pi(uart_cmd_ready_buf, &incoming_pi_cmd);
         if (parse_result == 0) {
@@ -165,7 +165,8 @@ int main(void)
         } else {
             // Handle parsing error (e.g., log it, send error response, etc.)
         }
-    }
+
+    }*/
     /* USER CODE END WHILE */
     
     /* USER CODE BEGIN 3 */
@@ -635,7 +636,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+/*
 // Executes parsed command from the Raspberry Pi and updates the borto_data structure
 void process_pi_command(BORTOCommand_t *cmd) {
   if (cmd == NULL) return;
@@ -718,7 +719,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
     HAL_UART_Receive_IT(huart, &uart_rx_byte, 1); // Restart UART RX interrupt
   }
 }
-
+*/
 /* USER CODE END 4 */
 
 /**

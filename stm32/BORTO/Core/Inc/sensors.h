@@ -23,12 +23,12 @@
 // V_ADC = ((R6 / (R5 + R6)) * ((V_VIOUT - V_DD) + V_3V3)) = 0.5 * (V_VIOUT + V_3V3)
 // ACS722LLCTR-05AB-T (+/-5A bidirectional): 0A = VCC/2 (~1.65V), Sensitivity = 264 mV/A
 #define CURR_DIFFAMP_DIV_GAIN       2.0f    // Inverse of 10k / (10k + 10k) output divider
-#define CURR_SENSOR_ZERO_OFFSET_V   1.650f  // IC1 VIOUT at 0A (half of IC1's 3.3V supply)
+#define CURR_SENSOR_ZERO_OFFSET_V   1.750f  // IC1 VIOUT at 0A (half of IC1's 3.3V supply)
 #define CURR_SENSOR_SENSITIVITY     0.264f  // Volts per Amp for ACS722LLCTR-05AB-T (264 mV/A)
 
 // --- ADC1 Rank 2: Buck / 24V SLA Battery Voltage Divider (System GND referenced) ---
 // Ratio = (R1 + R2) / R2 -> (100k + 10k) / 10k = 11.0f
-#define VOLT_DIVIDER_RATIO          11.0f
+#define VOLT_DIVIDER_RATIO          11.25f
 
 // --- ADC2 Rank 1: Boost Output Voltage Divider (System GND referenced) ---
 #define BOOST_VOLT_DIVIDER_RATIO    18.3f

@@ -34,7 +34,7 @@ typedef enum {
     CHARGING,
     DISCHARGING,
     CHARGED,
-    ERROR,
+//    ERROR,
 } Status_t;
 
 typedef enum {

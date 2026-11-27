@@ -32,7 +32,7 @@ static float filt_buck_voltage  = 24.0f;  // Pre-seeded near 24V target
 static float filt_boost_voltage = 33.9f;  // Pre-seeded near 33.9V target
 
 // --- Smoothing Factors (0.0 to 1.0) ---
-#define ALPHA_CURRENT   0.50f  // Light filter for fast inner current loop
+#define ALPHA_CURRENT   0.05f  // Light filter for fast inner current loop
 #define ALPHA_VOLTAGE   0.05f  // Moderate filter for outer voltage loops
 
 void Sensors_Init_Start(ADC_HandleTypeDef *hadc) {

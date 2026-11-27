@@ -15,7 +15,7 @@
 
 // Duty cycle limits to protect IRS21867 high-side bootstrap charging
 #define BUCK_MIN_DUTY_PCT   15.0f   // 5% minimum
-#define BUCK_MAX_DUTY_PCT   80.0f  // 90% maximum (guarantees low-side refresh time)
+#define BUCK_MAX_DUTY_PCT   95.0f  // 90% maximum (guarantees low-side refresh time)
 
 /**
  * @brief Binds the TIM handle to the buck module and resets duty cycle.
